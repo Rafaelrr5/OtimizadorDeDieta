@@ -13,7 +13,7 @@ class DietOptimizer:
         self.problem = None
         self.food_vars = {}
     
-    def optimize_diet(self, metac, metap, metag, orcamento):
+    def optimize_diet(self, metac, metap, metag, orcamento, excluded_foods=None):
         """Resolve o problema de otimização de dieta com restrições nutricionais e orçamentárias.
         
         Args:
@@ -21,10 +21,15 @@ class DietOptimizer:
             metap (float): Mínimo de proteína diária (em gramas)
             metag (float): Máximo de gordura diária (em gramas)
             orcamento (float): Orçamento máximo diário (em R$)
+            excluded_foods (list): Lista de nomes de alimentos a serem excluídos da otimização
         
         Returns:
             dict: Resultado da otimização com status, quantidades e custo total
         """
+        # Filtrar alimentos excluídos
+        if excluded_foods:
+            self.alimentos = [food for food in self.alimentos if food['nome'] not in excluded_foods]
+        
         # Criar o problema de minimização
         self.problem = pulp.LpProblem("Otimizacao_Dieta", pulp.LpMinimize)
         
@@ -118,7 +123,7 @@ class DietOptimizer:
             resultado['detalhes']['proteina_total'] += qtd * food['proteina']
             resultado['detalhes']['gordura_total'] += qtd * food['gordura']
 
-def optimize_diet(metac, metap, metag, orcamento):
+def optimize_diet(metac, metap, metag, orcamento, excluded_foods=None):
     """Função de conveniência para otimização de dieta
     
     Args:
@@ -126,9 +131,10 @@ def optimize_diet(metac, metap, metag, orcamento):
         metap (float): Mínimo de proteína diária (em gramas)
         metag (float): Máximo de gordura diária (em gramas)
         orcamento (float): Orçamento máximo diário (em R$)
+        excluded_foods (list): Lista de alimentos a serem excluídos da otimização
     
     Returns:
         dict: Resultado da otimização
     """
     optimizer = DietOptimizer()
-    return optimizer.optimize_diet(metac, metap, metag, orcamento)
+    return optimizer.optimize_diet(metac, metap, metag, orcamento, excluded_foods)

@@ -57,6 +57,11 @@ python main.py
 ## Funcionalidades
 - **Otimização Linear**: Usa programação linear para encontrar a solução ótima
 - **Interface Intuitiva**: GUI amigável com validação de entrada
+- **Interface Totalmente Responsiva**: 
+  - Janela redimensionável com tamanho mínimo definido
+  - Elementos que se adaptam automaticamente ao tamanho da janela
+  - Barras de rolagem horizontais e verticais para melhor visualização
+  - Seletor de alimentos com categorias e rolagem interna
 - **Base de Dados**: 21 alimentos com informações nutricionais e preços
 - **Resultados Detalhados**: Mostra quantidades, custos e resumo nutricional
 - **Validação**: Verifica entradas e fornece sugestões para problemas inviáveis

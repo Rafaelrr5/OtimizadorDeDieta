@@ -15,7 +15,7 @@ class DietApp:
         self.root = root
         self.root.title(WINDOW_TITLE)
         self.root.geometry(WINDOW_SIZE)
-        self.root.minsize(500, 400)  # Define um tamanho mínimo para a janela
+        self.root.minsize(500, 400)
         self.setup_style()
         
         # Lista de alimentos a serem excluídos
@@ -23,6 +23,9 @@ class DietApp:
         
         # Lista completa de alimentos
         self.all_foods = get_food_data()
+        
+        # Variável para controlar uso de limites de porção
+        self.use_portion_limits = tk.BooleanVar(value=True)
         
         self.create_widgets()
     
@@ -93,13 +96,21 @@ class DietApp:
         input_frame.grid(row=1, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         input_frame.columnconfigure(1, weight=1)
         
-        for row, (label, entry_var, placeholder) in enumerate(FIELD_LABELS):
-            ttk.Label(input_frame, text=label).grid(row=row, column=0, sticky=tk.W, pady=5)
-            entry = ttk.Entry(input_frame, width=20)
-            entry.grid(row=row, column=1, pady=5, padx=10, sticky=(tk.W, tk.E))
-            entry.insert(0, placeholder)
-            entry.bind('<FocusIn>', lambda e, ph=placeholder: self.clear_placeholder(e, ph))
-            setattr(self, entry_var, entry)
+        row_count = 0
+        for label, entry_var, placeholder in FIELD_LABELS:
+            if placeholder == "checkbox":
+                # Criar checkbox para limites de porção
+                checkbox = ttk.Checkbutton(input_frame, text=label, variable=self.use_portion_limits)
+                checkbox.grid(row=row_count, columnspan=2, sticky=tk.W, pady=5)
+                setattr(self, entry_var, self.use_portion_limits)
+            else:
+                ttk.Label(input_frame, text=label).grid(row=row_count, column=0, sticky=tk.W, pady=5)
+                entry = ttk.Entry(input_frame, width=20)
+                entry.grid(row=row_count, column=1, pady=5, padx=10, sticky=(tk.W, tk.E))
+                entry.insert(0, placeholder)
+                entry.bind('<FocusIn>', lambda e, ph=placeholder: self.clear_placeholder(e, ph))
+                setattr(self, entry_var, entry)
+            row_count += 1
 
     def create_food_selection(self, parent):
         """Cria a área para seleção de alimentos a excluir"""
@@ -365,6 +376,9 @@ class DietApp:
             # Adicionar a lista de alimentos excluídos
             values.append(self.excluded_foods if self.excluded_foods else None)
             
+            # Adicionar o uso de limites de porção
+            values.append(self.use_portion_limits.get())
+            
             return tuple(values)
             
         except ValueError:
@@ -391,23 +405,24 @@ class DietApp:
         
         # Lista de alimentos recomendados
         self.result_text.insert(tk.END, "ALIMENTOS RECOMENDADOS:\n")
-        self.result_text.insert(tk.END, "-" * 60 + "\n")
+        self.result_text.insert(tk.END, "-" * 70 + "\n")
         
         # Cabeçalho da tabela
-        self.result_text.insert(tk.END, f"{'Nome':<20} {'Qtd':>6} {'R$/porção':>10} {'R$ Total':>10}\n")
-        self.result_text.insert(tk.END, "-" * 60 + "\n")
+        self.result_text.insert(tk.END, f"{'Nome':<20} {'Qtd':>6} {'Limite':>8} {'R$/porção':>10} {'R$ Total':>10}\n")
+        self.result_text.insert(tk.END, "-" * 70 + "\n")
         
         alimentos_utilizados = []
         for alimento, qtd in resultado['quantidades'].items():
             if qtd > NUMERICAL_TOLERANCE:
-                # Buscar informações do alimento na base de dados
                 food_info = self.find_food_info(alimento)
-                alimentos_utilizados.append((alimento, qtd, food_info['preco'] if food_info else 0))
+                alimentos_utilizados.append((alimento, qtd, food_info))
         
         if alimentos_utilizados:
-            for alimento, qtd, preco in sorted(alimentos_utilizados, key=lambda x: x[1], reverse=True):
-                custo_total = qtd * preco
-                self.result_text.insert(tk.END, f"• {alimento:<18} {qtd:>6.2f} {preco:>10.2f} {custo_total:>10.2f}\n")
+            for alimento, qtd, food_info in sorted(alimentos_utilizados, key=lambda x: x[1], reverse=True):
+                custo_total = qtd * food_info['preco']
+                limite_str = f"{food_info.get('max_portions_daily', 'N/A'):.1f}"
+                self.result_text.insert(tk.END, f"• {alimento:<18} {qtd:>6.2f} {limite_str:>8} " + 
+                                              f"{food_info['preco']:>10.2f} {custo_total:>10.2f}\n")
         else:
             self.result_text.insert(tk.END, "Nenhum alimento necessário.\n")
         
@@ -448,6 +463,15 @@ class DietApp:
                                             f"{info['gordura']:>4}g gord, " + 
                                             f"R${info['preco']:>5.2f}\n")
             self.result_text.insert(tk.END, "\n")
+        
+        # Informações sobre limites de porção
+        self.result_text.insert(tk.END, f"\n{'LIMITES DE PORÇÃO POR CATEGORIA:'}\n")
+        self.result_text.insert(tk.END, "-" * 40 + "\n")
+        
+        from config.constants import CATEGORY_PORTION_LIMITS
+        for categoria, limites in CATEGORY_PORTION_LIMITS.items():
+            self.result_text.insert(tk.END, f"{categoria}:\n")
+            self.result_text.insert(tk.END, f"  Mín: {limites['min_daily']:.1f} - Máx: {limites['max_daily']:.1f} porções/dia\n")
         
         self.result_text.insert(tk.END, "\n" + "=" * 50 + "\n")
     

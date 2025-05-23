@@ -13,7 +13,7 @@ class DietOptimizer:
         self.problem = None
         self.food_vars = {}
     
-    def optimize_diet(self, metac, metap, metag, orcamento, excluded_foods=None):
+    def optimize_diet(self, metac, metap, metag, orcamento, excluded_foods=None, use_portion_limits=False):
         """Resolve o problema de otimização de dieta com restrições nutricionais e orçamentárias.
         
         Args:
@@ -22,6 +22,7 @@ class DietOptimizer:
             metag (float): Máximo de gordura diária (em gramas)
             orcamento (float): Orçamento máximo diário (em R$)
             excluded_foods (list): Lista de nomes de alimentos a serem excluídos da otimização
+            use_portion_limits (bool): Se deve aplicar limites de porção por dia
         
         Returns:
             dict: Resultado da otimização com status, quantidades e custo total
@@ -42,6 +43,10 @@ class DietOptimizer:
         # Adicionar restrições
         self._add_nutritional_constraints(metac, metap, metag)
         self._add_budget_constraint(orcamento)
+        
+        # Adicionar limites de porção se habilitado
+        if use_portion_limits:
+            self._add_portion_constraints()
         
         # Resolver o problema
         self.problem.solve(pulp.PULP_CBC_CMD(msg=0))
@@ -93,6 +98,19 @@ class DietOptimizer:
             for food in self.alimentos
         ]) <= orcamento
     
+    def _add_portion_constraints(self):
+        """Adiciona restrições de limite de porções diárias"""
+        for food in self.alimentos:
+            nome = food['nome']
+            
+            # Limite mínimo de porções
+            if food.get('min_portions_daily', 0) > 0:
+                self.problem += self.food_vars[nome] >= food['min_portions_daily']
+            
+            # Limite máximo de porções
+            if food.get('max_portions_daily'):
+                self.problem += self.food_vars[nome] <= food['max_portions_daily']
+    
     def _prepare_result(self):
         """Prepara o resultado da otimização"""
         resultado = {
@@ -123,7 +141,7 @@ class DietOptimizer:
             resultado['detalhes']['proteina_total'] += qtd * food['proteina']
             resultado['detalhes']['gordura_total'] += qtd * food['gordura']
 
-def optimize_diet(metac, metap, metag, orcamento, excluded_foods=None):
+def optimize_diet(metac, metap, metag, orcamento, excluded_foods=None, use_portion_limits=False):
     """Função de conveniência para otimização de dieta
     
     Args:
@@ -132,9 +150,10 @@ def optimize_diet(metac, metap, metag, orcamento, excluded_foods=None):
         metag (float): Máximo de gordura diária (em gramas)
         orcamento (float): Orçamento máximo diário (em R$)
         excluded_foods (list): Lista de alimentos a serem excluídos da otimização
+        use_portion_limits (bool): Se deve aplicar limites de porção por dia
     
     Returns:
         dict: Resultado da otimização
     """
     optimizer = DietOptimizer()
-    return optimizer.optimize_diet(metac, metap, metag, orcamento, excluded_foods)
+    return optimizer.optimize_diet(metac, metap, metag, orcamento, excluded_foods, use_portion_limits)

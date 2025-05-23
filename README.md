@@ -51,19 +51,22 @@ python main.py
    - Proteína mínima diária (gramas)
    - Gordura máxima diária (gramas)
    - Orçamento máximo diário (R$)
-3. Clique em "Otimizar Dieta"
-4. Visualize os resultados na área de resultados
+   - **Usar limites de porção**: Ativa/desativa limites diários de porções por categoria
+3. Selecione alimentos a excluir (opcional)
+4. Clique em "Otimizar Dieta"
+5. Visualize os resultados na área de resultados
 
 ## Funcionalidades
 - **Otimização Linear**: Usa programação linear para encontrar a solução ótima
+- **Limites de Porção**: Sistema configurável de limites mínimos e máximos de porções por categoria de alimento
 - **Interface Intuitiva**: GUI amigável com validação de entrada
 - **Interface Totalmente Responsiva**: 
   - Janela redimensionável com tamanho mínimo definido
   - Elementos que se adaptam automaticamente ao tamanho da janela
   - Barras de rolagem horizontais e verticais para melhor visualização
   - Seletor de alimentos com categorias e rolagem interna
-- **Base de Dados**: 21 alimentos com informações nutricionais e preços
-- **Resultados Detalhados**: Mostra quantidades, custos e resumo nutricional
+- **Base de Dados**: 21 alimentos com informações nutricionais, preços e limites de porção
+- **Resultados Detalhados**: Mostra quantidades, limites, custos e resumo nutricional
 - **Validação**: Verifica entradas e fornece sugestões para problemas inviáveis
 
 ## Algoritmo
@@ -74,6 +77,15 @@ O sistema resolve um problema de programação linear onde:
   - Proteína ≥ mínimo especificado
   - Gordura ≤ máximo especificado
   - Custo ≤ orçamento especificado
+  - **Porções por alimento** ≥ mínimo e ≤ máximo por categoria (quando habilitado)
+
+## Limites de Porção por Categoria
+- **Cereais e Grãos**: 2-6 porções/dia
+- **Proteínas**: 1-5 porções/dia
+- **Laticínios**: 1-3 porções/dia
+- **Vegetais**: 3-8 porções/dia
+- **Frutas**: 2-4 porções/dia
+- **Óleos e Gorduras**: 0-3 porções/dia
 
 ## Arquivos Principais
 - `main.py`: Ponto de entrada da aplicação

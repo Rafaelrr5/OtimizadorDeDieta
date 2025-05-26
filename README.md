@@ -79,6 +79,21 @@ O sistema resolve um problema de programação linear onde:
   - Custo ≤ orçamento especificado
   - **Porções por alimento** ≥ mínimo e ≤ máximo por categoria (quando habilitado)
 
+## Exemplo de Otimização
+O sistema inclui uma função de exemplo que pode ser executada diretamente:
+
+```bash
+python -c "from optimization.diet_optimizer import exemplo_otimizacao_dieta; exemplo_otimizacao_dieta()"
+```
+
+Este exemplo usa valores nutricionais realistas para um adulto médio:
+- Calorias: 2000 kcal (mínimo diário)
+- Proteínas: 50g (mínimo diário)
+- Gorduras: 65g (máximo diário, ~30% das calorias totais)
+- Orçamento: R$ 50,00 (valor diário)
+
+A função exibe no console uma dieta otimizada com alimentos, porções e resumo nutricional.
+
 ## Limites de Porção por Categoria
 - **Cereais e Grãos**: 2-6 porções/dia
 - **Proteínas**: 1-5 porções/dia

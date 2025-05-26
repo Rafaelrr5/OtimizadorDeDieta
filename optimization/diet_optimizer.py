@@ -131,6 +131,9 @@ class DietOptimizer:
     
     def _extract_optimal_quantities(self, resultado):
         """Extrai as quantidades ótimas da solução"""
+        # Lista formatada para interface gráfica
+        resultado['alimentos'] = []
+        
         for food in self.alimentos:
             qtd = self.food_vars[food['nome']].varValue or 0
             resultado['quantidades'][food['nome']] = qtd
@@ -140,6 +143,17 @@ class DietOptimizer:
             resultado['detalhes']['calorias_total'] += qtd * food['calorias']
             resultado['detalhes']['proteina_total'] += qtd * food['proteina']
             resultado['detalhes']['gordura_total'] += qtd * food['gordura']
+            
+            # Adicionar formato esperado pela interface
+            if qtd > 0.01:  # Apenas alimentos com quantidade significativa
+                resultado['alimentos'].append({
+                    'nome': food['nome'],
+                    'quantidade': qtd,
+                    'calorias': qtd * food['calorias'],
+                    'proteina': qtd * food['proteina'],
+                    'gordura': qtd * food['gordura'],
+                    'custo': qtd * food['preco']
+                })
 
 def optimize_diet(metac, metap, metag, orcamento, excluded_foods=None, use_portion_limits=False):
     """Função de conveniência para otimização de dieta
@@ -157,3 +171,62 @@ def optimize_diet(metac, metap, metag, orcamento, excluded_foods=None, use_porti
     """
     optimizer = DietOptimizer()
     return optimizer.optimize_diet(metac, metap, metag, orcamento, excluded_foods, use_portion_limits)
+
+
+def exemplo_otimizacao_dieta():
+    """Exemplo de uso da otimização de dieta com valores realistas.
+    
+    Esta função demonstra como usar o otimizador de dieta com valores
+    nutricionais próximos da realidade para um adulto médio.
+    
+    Valores utilizados:
+    - Calorias: 2000 kcal (mínimo diário para um adulto médio)
+    - Proteínas: 50g (mínimo diário recomendado para adulto médio)
+    - Gorduras: 65g (máximo diário, ~30% das calorias totais)
+    - Orçamento: R$ 50,00 (valor diário realista)
+    
+    Returns:
+        dict: Resultado da otimização com alimentos, quantidades e valores nutricionais
+    """
+    # Valores nutricionais realistas (alinhados com constants.py)
+    calorias_min = 2000    # kcal mínimas diárias
+    proteina_min = 50      # gramas mínimas diárias
+    gordura_max = 65       # gramas máximas diárias
+    orcamento_max = 50.0   # orçamento diário em R$
+    
+    # Alimentos que desejamos excluir (opcional)
+    # Verificar que estes alimentos existem na base de dados
+    alimentos_excluidos = ["Bacon", "Refrigerante"]
+    
+    # Executar otimização
+    resultado = optimize_diet(
+        metac=calorias_min,
+        metap=proteina_min, 
+        metag=gordura_max,
+        orcamento=orcamento_max,
+        excluded_foods=alimentos_excluidos,
+        use_portion_limits=True  # Aplicar limites de porção recomendados
+    )
+    
+    # Exibir resultados
+    print(f"Status da otimização: {resultado['status']}")
+    
+    if resultado['status'] == 'Optimal':
+        print("\nAlimentos recomendados (porções):")
+        for alimento in resultado['alimentos']:
+            print(f"- {alimento['nome']}: {alimento['quantidade']:.2f}")
+        
+        print(f"\nCusto total: R$ {resultado['custo_total']:.2f}")
+        print("\nNutrientes totais:")
+        print(f"- Calorias: {resultado['detalhes']['calorias_total']:.2f} kcal")
+        print(f"- Proteínas: {resultado['detalhes']['proteina_total']:.2f}g")
+        print(f"- Gorduras: {resultado['detalhes']['gordura_total']:.2f}g")
+    else:
+        print("Não foi possível encontrar uma solução ótima com os parâmetros informados.")
+    
+    return resultado
+
+
+# Para executar o exemplo diretamente quando o script é rodado
+if __name__ == "__main__":
+    exemplo_otimizacao_dieta()

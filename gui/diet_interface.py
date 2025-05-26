@@ -156,7 +156,8 @@ class DietApp:
             ("🧈 Gordura máxima (g):", "fat_entry", str(DEFAULT_VALUES['gordura'])),
             ("💰 Orçamento máximo (R$):", "budget_entry", str(DEFAULT_VALUES['orcamento']))
         ]
-          self.entries = {}
+        
+        self.entries = {}
         
         for i, (label_text, entry_name, placeholder) in enumerate(entries_data):
             # Label
@@ -434,7 +435,8 @@ class DietApp:
             names = VALIDATION_NAMES
             defaults = [str(DEFAULT_VALUES['calorias']), str(DEFAULT_VALUES['proteina']), 
                        str(DEFAULT_VALUES['gordura']), str(DEFAULT_VALUES['orcamento'])]
-              for entry, name, default in zip(entries, names, defaults):
+            
+            for entry, name, default in zip(entries, names, defaults):
                 value_str = entry.get().strip()
                 entry_color = str(entry.cget('foreground'))  # Convert Tcl_Obj to string
                 

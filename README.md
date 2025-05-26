@@ -79,6 +79,19 @@ O sistema resolve um problema de programação linear onde:
   - Custo ≤ orçamento especificado
   - **Porções por alimento** ≥ mínimo e ≤ máximo por categoria (quando habilitado)
 
+### Passo a passo da programação linear
+1. Carregar dados de alimentos com calorias, proteínas, gorduras, preços e limites de porção.
+2. Criar variáveis de decisão x_i ≥ 0 para cada alimento, representando a quantidade de porções.
+3. Definir a função objetivo: minimizar o custo total (∑ preço_i * x_i).
+4. Adicionar restrições nutricionais:
+   - ∑ calorias_i * x_i ≥ calorias mínimas (metac)
+   - ∑ proteína_i * x_i ≥ proteína mínima (metap)
+   - ∑ gordura_i * x_i ≤ gordura máxima (metag)
+5. Adicionar restrição de orçamento: ∑ preço_i * x_i ≤ orçamento máximo (orcamento).
+6. (Opcional) Adicionar limites de porção diários: min_portions_daily ≤ x_i ≤ max_portions_daily por alimento.
+7. Resolver o problema usando o solver CBC do PuLP (`PULP_CBC_CMD`).
+8. Extrair a solução: ler valores de x_i (`varValue`), calcular custo_total, calorias_total, proteína_total e gordura_total para apresentar o resultado.
+
 ## Exemplo de Otimização
 O sistema inclui uma função de exemplo que pode ser executada diretamente:
 

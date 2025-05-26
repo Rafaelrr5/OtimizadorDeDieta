@@ -21,37 +21,37 @@ def get_food_data():
     """
     base_foods = [
         # Cereais e grãos
-        {"nome": "Arroz", "calorias": 130, "proteina": 2.7, "gordura": 0.3, "preco": 1.20, "categoria": "Cereais e Grãos"},
-        {"nome": "Feijao", "calorias": 95, "proteina": 6.0, "gordura": 0.5, "preco": 2.50, "categoria": "Cereais e Grãos"},
-        {"nome": "Macarrao", "calorias": 220, "proteina": 8.0, "gordura": 1.1, "preco": 1.80, "categoria": "Cereais e Grãos"},
-        {"nome": "Aveia", "calorias": 68, "proteina": 2.4, "gordura": 1.4, "preco": 1.50, "categoria": "Cereais e Grãos"},
-        {"nome": "Pao Integral", "calorias": 80, "proteina": 4.0, "gordura": 1.0, "preco": 1.00, "categoria": "Cereais e Grãos"},
+        {"nome": "Arroz", "calorias": 2600, "proteina": 48.0, "gordura": 4.0, "preco": 7.00, "categoria": "Cereais e Grãos", "porcao": "1kg"},
+        {"nome": "Feijao", "calorias": 2533.33, "proteina": 156.67, "gordura": 16.67, "preco": 8.00, "categoria": "Cereais e Grãos", "porcao": "1kg"},
+        {"nome": "Macarrao", "calorias": 987.5, "proteina": 36.25, "gordura": 5.625, "preco": 4.00, "categoria": "Cereais e Grãos", "porcao": "500g"},
+        {"nome": "Aveia", "calorias": 370.0, "proteina": 12.5, "gordura": 6.25, "preco": 1.50, "categoria": "Cereais e Grãos", "porcao": "100g"},
+        {"nome": "Pao Integral", "calorias": 130, "proteina": 5.0, "gordura": 2.5, "preco": 0.70, "categoria": "Cereais e Grãos", "porcao": "50g"},
         
         # Proteínas
-        {"nome": "Frango", "calorias": 165, "proteina": 31.0, "gordura": 3.6, "preco": 8.50, "categoria": "Proteínas"},
-        {"nome": "Carne Bovina", "calorias": 250, "proteina": 26.0, "gordura": 15.0, "preco": 15.00, "categoria": "Proteínas"},
-        {"nome": "Peixe", "calorias": 206, "proteina": 22.0, "gordura": 12.0, "preco": 12.00, "categoria": "Proteínas"},
-        {"nome": "Ovos", "calorias": 155, "proteina": 13.0, "gordura": 11.0, "preco": 4.50, "categoria": "Proteínas"},
-        {"nome": "Queijo", "calorias": 113, "proteina": 7.0, "gordura": 9.0, "preco": 5.50, "categoria": "Proteínas"},
+        {"nome": "Frango", "calorias": 1650, "proteina": 310.0, "gordura": 36.0, "preco": 15.00, "categoria": "Proteínas", "porcao": "1kg"},
+        {"nome": "Carne Bovina", "calorias": 217, "proteina": 26.0, "gordura": 12.0, "preco": 4.00, "categoria": "Proteínas", "porcao": "100g"},
+        {"nome": "Peixe", "calorias": 129, "proteina": 26.0, "gordura": 2.7, "preco": 3.00, "categoria": "Proteínas", "porcao": "100g"},
+        {"nome": "Ovos", "calorias": 1360, "proteina": 120.0, "gordura": 100.0, "preco": 17.00, "categoria": "Proteínas", "porcao": "20 unidades"},
+        {"nome": "Queijo", "calorias": 3333.33, "proteina": 233.33, "gordura": 266.67, "preco": 30.00, "categoria": "Proteínas", "porcao": "1kg"},
         
         # Laticínios
-        {"nome": "Leite", "calorias": 60, "proteina": 3.2, "gordura": 3.2, "preco": 2.80, "categoria": "Laticínios"},
-        {"nome": "Iogurte", "calorias": 59, "proteina": 3.5, "gordura": 3.3, "preco": 4.20, "categoria": "Laticínios"},
+        {"nome": "Leite", "calorias": 650, "proteina": 33.0, "gordura": 37.0, "preco": 5.00, "categoria": "Laticínios", "porcao": "1L"},
+        {"nome": "Iogurte", "calorias": 500, "proteina": 25.0, "gordura": 17.5, "preco": 12.79, "categoria": "Laticínios", "porcao": "1kg"},
         
         # Vegetais
-        {"nome": "Brócolis", "calorias": 25, "proteina": 3.0, "gordura": 0.3, "preco": 3.50, "categoria": "Vegetais"},
-        {"nome": "Cenoura", "calorias": 25, "proteina": 0.6, "gordura": 0.1, "preco": 2.00, "categoria": "Vegetais"},
-        {"nome": "Tomate", "calorias": 18, "proteina": 0.9, "gordura": 0.2, "preco": 2.50, "categoria": "Vegetais"},
-        {"nome": "Alface", "calorias": 5, "proteina": 0.5, "gordura": 0.1, "preco": 1.80, "categoria": "Vegetais"},
+        {"nome": "Brócolis", "calorias": 35, "proteina": 2.4, "gordura": 0.4, "preco": 1.50, "categoria": "Vegetais", "porcao": "80g"},
+        {"nome": "Cenoura", "calorias": 41, "proteina": 0.9, "gordura": 0.2, "preco": 0.80, "categoria": "Vegetais", "porcao": "50g"},
+        {"nome": "Tomate", "calorias": 18, "proteina": 0.9, "gordura": 0.2, "preco": 1.20, "categoria": "Vegetais", "porcao": "100g"},
+        {"nome": "Alface", "calorias": 15, "proteina": 1.4, "gordura": 0.2, "preco": 0.50, "categoria": "Vegetais", "porcao": "50g"},
         
         # Frutas
-        {"nome": "Banana", "calorias": 89, "proteina": 1.1, "gordura": 0.3, "preco": 2.20, "categoria": "Frutas"},
-        {"nome": "Maçã", "calorias": 52, "proteina": 0.3, "gordura": 0.2, "preco": 3.00, "categoria": "Frutas"},
-        {"nome": "Laranja", "calorias": 47, "proteina": 0.9, "gordura": 0.1, "preco": 2.80, "categoria": "Frutas"},
+        {"nome": "Banana", "calorias": 89, "proteina": 1.1, "gordura": 0.3, "preco": 3.00, "categoria": "Frutas", "porcao": "1 unidade (120g)"},
+        {"nome": "Maçã", "calorias": 52, "proteina": 0.3, "gordura": 0.2, "preco": 14.00, "categoria": "Frutas", "porcao": "1 unidade (150g)"},
+        {"nome": "Laranja", "calorias": 47, "proteina": 0.9, "gordura": 0.1, "preco": 0.80, "categoria": "Frutas", "porcao": "1 unidade (150g)"},
         
         # Óleos e gorduras
-        {"nome": "Azeite", "calorias": 884, "proteina": 0.0, "gordura": 100.0, "preco": 0.80, "categoria": "Óleos e Gorduras"},
-        {"nome": "Manteiga", "calorias": 717, "proteina": 0.9, "gordura": 81.0, "preco": 1.20, "categoria": "Óleos e Gorduras"},
+        {"nome": "Azeite", "calorias": 8800, "proteina": 0.0, "gordura": 1000.0, "preco": 50.00, "categoria": "Óleos e Gorduras", "porcao": "1L"},
+        {"nome": "Manteiga", "calorias": 102, "proteina": 0.1, "gordura": 11.5, "preco": 0.42, "categoria": "Óleos e Gorduras", "porcao": "10g"},
     ]
     
     # Adicionar limites de porção baseados na categoria

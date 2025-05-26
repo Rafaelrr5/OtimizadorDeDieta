@@ -13,7 +13,7 @@ class DietOptimizer:
         self.problem = None
         self.food_vars = {}
     
-    def optimize_diet(self, metac, metap, metag, orcamento, excluded_foods=None, use_portion_limits=False):
+    def optimize_diet(self, metac, metap, metag, orcamento, excluded_foods=None, use_portion_limits=False, metacarb=None):
         """Resolve o problema de otimização de dieta com restrições nutricionais e orçamentárias.
         
         Args:
@@ -23,6 +23,7 @@ class DietOptimizer:
             orcamento (float): Orçamento máximo diário (em R$)
             excluded_foods (list): Lista de nomes de alimentos a serem excluídos da otimização
             use_portion_limits (bool): Se deve aplicar limites de porção por dia
+            metacarb (float, optional): Máximo de carboidratos diários (em gramas)
         
         Returns:
             dict: Resultado da otimização com status, quantidades e custo total
@@ -41,7 +42,7 @@ class DietOptimizer:
         self._set_objective_function()
         
         # Adicionar restrições
-        self._add_nutritional_constraints(metac, metap, metag)
+        self._add_nutritional_constraints(metac, metap, metag, metacarb)
         self._add_budget_constraint(orcamento)
         
         # Adicionar limites de porção se habilitado
@@ -71,7 +72,7 @@ class DietOptimizer:
             for food in self.alimentos
         ])
     
-    def _add_nutritional_constraints(self, metac, metap, metag):
+    def _add_nutritional_constraints(self, metac, metap, metag, metacarb=None):
         """Adiciona restrições nutricionais"""
         # Calorias mínimas
         self.problem += pulp.lpSum([
@@ -90,6 +91,13 @@ class DietOptimizer:
             self.food_vars[food['nome']] * food['gordura'] 
             for food in self.alimentos
         ]) <= metag
+        
+        # Carboidrato máximo (opcional)
+        if metacarb is not None:
+            self.problem += pulp.lpSum([
+                self.food_vars[food['nome']] * food.get('carboidrato', 0) 
+                for food in self.alimentos
+            ]) <= metacarb
     
     def _add_budget_constraint(self, orcamento):
         """Adiciona restrição de orçamento"""
@@ -120,7 +128,8 @@ class DietOptimizer:
             'detalhes': {
                 'calorias_total': 0,
                 'proteina_total': 0,
-                'gordura_total': 0
+                'gordura_total': 0,
+                'carboidrato_total': 0
             }
         }
         
@@ -143,6 +152,7 @@ class DietOptimizer:
             resultado['detalhes']['calorias_total'] += qtd * food['calorias']
             resultado['detalhes']['proteina_total'] += qtd * food['proteina']
             resultado['detalhes']['gordura_total'] += qtd * food['gordura']
+            resultado['detalhes']['carboidrato_total'] += qtd * food.get('carboidrato', 0)
             
             # Adicionar formato esperado pela interface
             if qtd > 0.01:  # Apenas alimentos com quantidade significativa
@@ -152,6 +162,7 @@ class DietOptimizer:
                     'calorias': qtd * food['calorias'],
                     'proteina': qtd * food['proteina'],
                     'gordura': qtd * food['gordura'],
+                    'carboidrato': qtd * food.get('carboidrato', 0),
                     'custo': qtd * food['preco']
                 })
 

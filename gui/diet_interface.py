@@ -1,5 +1,5 @@
 """
-Interface gráfica para o otimizador de dieta
+Interface gráfica moderna para o otimizador de dieta usando Tkinter nativo com visual melhorado
 """
 
 import tkinter as tk
@@ -9,328 +9,485 @@ from config.constants import *
 from data.food_database import get_food_data, get_food_categories
 
 class DietApp:
-    """Classe principal da interface gráfica"""
+    """Classe principal da interface gráfica moderna"""
     
-    def __init__(self, root):
-        self.root = root
-        self.root.title(WINDOW_TITLE)
-        self.root.geometry(WINDOW_SIZE)
-        self.root.minsize(500, 400)
-        self.setup_style()
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("🥗 Otimizador de Dieta - Inteligência Artificial")
+        self.root.geometry("1200x800")
+        self.root.minsize(900, 600)
         
-        # Lista de alimentos a serem excluídos
+        # Configurar cores modernas (tema escuro)
+        self.colors = {
+            'bg_primary': '#1e1e2e',      # Fundo principal
+            'bg_secondary': '#313244',    # Fundo secundário
+            'bg_tertiary': '#45475a',     # Fundo terciário
+            'accent': '#89b4fa',          # Cor de destaque (azul)
+            'accent_hover': '#74c7ec',    # Cor de destaque hover
+            'success': '#a6e3a1',         # Verde para sucesso
+            'warning': '#f9e2af',         # Amarelo para avisos
+            'error': '#f38ba8',           # Rosa para erros
+            'text_primary': '#cdd6f4',    # Texto principal
+            'text_secondary': '#bac2de'   # Texto secundário
+        }
+        
+        # Configurar tema escuro
+        self.setup_dark_theme()
+          # Dados da aplicação
         self.excluded_foods = []
-        
-        # Lista completa de alimentos
         self.all_foods = get_food_data()
-        
-        # Variável para controlar uso de limites de porção
         self.use_portion_limits = tk.BooleanVar(value=True)
+        self.placeholder_status = {}  # Initialize placeholder tracking
+        
+        # Configurar grid principal
+        self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_rowconfigure(0, weight=1)
         
         self.create_widgets()
     
-    def setup_style(self):
-        """Configura o estilo da interface"""
+    def setup_dark_theme(self):
+        """Configura tema escuro moderno"""
+        self.root.configure(bg=self.colors['bg_primary'])
+        
+        # Configurar estilo ttk
         style = ttk.Style()
-        style.theme_use(WINDOW_THEME)
-
+        style.theme_use('clam')
+        
+        # Configurar cores para widgets ttk
+        style.configure('Title.TLabel', 
+                       background=self.colors['bg_primary'],
+                       foreground=self.colors['text_primary'],
+                       font=('Segoe UI', 20, 'bold'))
+        
+        style.configure('Heading.TLabel',
+                       background=self.colors['bg_secondary'],
+                       foreground=self.colors['accent'],
+                       font=('Segoe UI', 14, 'bold'))
+        
+        style.configure('Modern.TLabel',
+                       background=self.colors['bg_secondary'],
+                       foreground=self.colors['text_primary'],
+                       font=('Segoe UI', 10))
+        
+        style.configure('Modern.TEntry',
+                       fieldbackground=self.colors['bg_tertiary'],
+                       bordercolor=self.colors['accent'],
+                       foreground=self.colors['text_primary'],
+                       insertcolor=self.colors['text_primary'])
+        
+        style.configure('Modern.TFrame',
+                       background=self.colors['bg_secondary'],
+                       relief='flat',
+                       borderwidth=1)
+        
+        style.configure('Card.TFrame',
+                       background=self.colors['bg_secondary'],
+                       relief='raised',
+                       borderwidth=2)
+        
+        style.configure('Modern.TCheckbutton',
+                       background=self.colors['bg_secondary'],
+                       foreground=self.colors['text_primary'],
+                       focuscolor='none')
+    
     def create_widgets(self):
         """Cria e posiciona os elementos da interface"""
-        # Configurar redimensionamento
-        self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(0, weight=1)
+        # Frame principal com scroll
+        main_canvas = tk.Canvas(self.root, bg=self.colors['bg_primary'], highlightthickness=0)
+        main_canvas.grid(row=0, column=0, sticky="nsew")
         
-        # Criar canvas principal para scroll
-        self.main_canvas = tk.Canvas(self.root, highlightthickness=0)
-        self.main_canvas.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=main_canvas.yview)
+        scrollbar.grid(row=0, column=1, sticky="ns")
         
-        # Adicionar barras de rolagem
-        v_scrollbar = ttk.Scrollbar(self.root, orient=tk.VERTICAL, command=self.main_canvas.yview)
-        v_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        main_canvas.configure(yscrollcommand=scrollbar.set)
         
-        h_scrollbar = ttk.Scrollbar(self.root, orient=tk.HORIZONTAL, command=self.main_canvas.xview)
-        h_scrollbar.grid(row=1, column=0, sticky=(tk.W, tk.E))
+        # Frame scrollável
+        self.main_frame = ttk.Frame(main_canvas, style='Modern.TFrame', padding=20)
+        canvas_frame = main_canvas.create_window((0, 0), window=self.main_frame, anchor="nw")
         
-        # Configurar canvas com scrollbars
-        self.main_canvas.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+        # Configurar scroll
+        def configure_scroll(event):
+            main_canvas.configure(scrollregion=main_canvas.bbox("all"))
+            
+        def configure_canvas(event):
+            main_canvas.itemconfig(canvas_frame, width=event.width-20)
+            
+        self.main_frame.bind("<Configure>", configure_scroll)
+        main_canvas.bind("<Configure>", configure_canvas)
         
-        # Frame principal dentro do canvas
-        main_frame = ttk.Frame(self.main_canvas, padding=20)
-        self.canvas_frame_id = self.main_canvas.create_window((0, 0), window=main_frame, anchor=tk.NW)
+        # Bind scroll com mouse
+        def on_mousewheel(event):
+            main_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        main_canvas.bind("<MouseWheel>", on_mousewheel)
         
-        # Configurar redimensionamento do frame principal
-        main_frame.columnconfigure(0, weight=1)
-        main_frame.columnconfigure(1, weight=3)
+        # Configurar grid do frame principal
+        self.main_frame.grid_columnconfigure(0, weight=1)
         
-        # Configurar redimensionamento de todas as linhas importantes
-        for i in range(7):
-            main_frame.rowconfigure(i, weight=1 if i == 6 else 0)  # Dá peso à linha de resultados
+        # Título principal
+        title_label = ttk.Label(
+            self.main_frame, 
+            text="🥗 Otimizador de Dieta com IA",
+            style='Title.TLabel'
+        )
+        title_label.grid(row=0, column=0, pady=(0, 30), sticky="ew")
         
-        # Bind eventos para atualizar scroll region
-        main_frame.bind("<Configure>", self.on_frame_configure)
-        self.main_canvas.bind("<Configure>", self.on_canvas_configure)
-        
-        # Bind mousewheel para scroll
-        self.bind_mousewheel()
-        
-        # Título
-        title_label = ttk.Label(main_frame, text="Otimizador de Dieta", 
-                                font=('Arial', 16, 'bold'))
-        title_label.grid(row=0, columnspan=2, pady=(0, 20))
-        
-        # Criação dos campos de entrada
-        self.create_input_fields(main_frame)
-        
-        # Criação da área de exclusão de alimentos
-        self.create_food_selection(main_frame)
-        
-        # Frame para botões
-        self.create_button_frame(main_frame)
-        
-        # Área de resultados
-        self.create_result_display(main_frame)
+        # Criar seções
+        self.create_input_section()
+        self.create_food_exclusion_section()
+        self.create_action_buttons()
+        self.create_results_section()
     
-    def create_input_fields(self, parent):
-        """Cria os campos de entrada de dados"""
-        input_frame = ttk.LabelFrame(parent, text="Parâmetros da Dieta", padding=10)
-        input_frame.grid(row=1, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
-        input_frame.columnconfigure(1, weight=1)
+    def create_input_section(self):
+        """Cria a seção de entrada de parâmetros"""
+        # Frame para parâmetros
+        params_frame = ttk.LabelFrame(
+            self.main_frame, 
+            text="📊 Parâmetros Nutricionais",
+            style='Card.TFrame',
+            padding=20
+        )
+        params_frame.grid(row=1, column=0, sticky="ew", pady=(0, 20))
+        params_frame.grid_columnconfigure((0, 1), weight=1)
         
-        row_count = 0
-        for label, entry_var, placeholder in FIELD_LABELS:
-            if placeholder == "checkbox":
-                # Criar checkbox para limites de porção
-                checkbox = ttk.Checkbutton(input_frame, text=label, variable=self.use_portion_limits)
-                checkbox.grid(row=row_count, columnspan=2, sticky=tk.W, pady=5)
-                setattr(self, entry_var, self.use_portion_limits)
-            else:
-                ttk.Label(input_frame, text=label).grid(row=row_count, column=0, sticky=tk.W, pady=5)
-                entry = ttk.Entry(input_frame, width=20)
-                entry.grid(row=row_count, column=1, pady=5, padx=10, sticky=(tk.W, tk.E))
-                entry.insert(0, placeholder)
-                entry.bind('<FocusIn>', lambda e, ph=placeholder: self.clear_placeholder(e, ph))
-                setattr(self, entry_var, entry)
-            row_count += 1
-
-    def create_food_selection(self, parent):
-        """Cria a área para seleção de alimentos a excluir"""
-        food_frame = ttk.LabelFrame(parent, text="Excluir Alimentos", padding=10)
-        food_frame.grid(row=2, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
-        food_frame.columnconfigure(0, weight=1)
-        
-        # Exibição dos alimentos selecionados para exclusão
-        excluded_label = ttk.Label(food_frame, text="Alimentos excluídos:")
-        excluded_label.grid(row=0, column=0, sticky=tk.W, pady=(0, 5))
-        
-        # Frame para conter o texto e barra de rolagem
-        excluded_frame = ttk.Frame(food_frame)
-        excluded_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
-        excluded_frame.columnconfigure(0, weight=1)
-        excluded_frame.rowconfigure(0, weight=1)
-        
-        self.excluded_display = tk.Text(excluded_frame, height=2, width=40, wrap=tk.WORD)
-        self.excluded_display.grid(row=0, column=0, sticky=(tk.W, tk.E))
-        self.excluded_display.insert(tk.END, "Nenhum alimento excluído")
-        self.excluded_display.config(state=tk.DISABLED)
-        
-        # Adiciona barra de rolagem horizontal para a área de alimentos excluídos
-        hsb = ttk.Scrollbar(excluded_frame, orient=tk.HORIZONTAL, command=self.excluded_display.xview)
-        hsb.grid(row=1, column=0, sticky=(tk.W, tk.E))
-        self.excluded_display.configure(xscrollcommand=hsb.set)
-        
-        # Botão para selecionar alimentos a excluir
-        select_button = ttk.Button(food_frame, text="Selecionar Alimentos", command=self.open_food_selector)
-        select_button.grid(row=2, column=0, pady=(0, 5))
-    def open_food_selector(self):
-        """Abre uma janela para seleção de alimentos a excluir"""
-        self.selector_window = tk.Toplevel(self.root)
-        self.selector_window.title("Selecionar Alimentos a Excluir")
-        self.selector_window.geometry("500x400")
-        self.selector_window.minsize(400, 300)  # Define o tamanho mínimo da janela de seleção
-        self.selector_window.transient(self.root)
-        self.selector_window.grab_set()
-        
-        # Configurar redimensionamento
-        self.selector_window.columnconfigure(0, weight=1)
-        self.selector_window.rowconfigure(0, weight=1)
-        
-        # Frame para a lista de alimentos
-        selector_frame = ttk.Frame(self.selector_window, padding=10)
-        selector_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        selector_frame.columnconfigure(0, weight=1)
-        selector_frame.rowconfigure(0, weight=1)
-        selector_frame.rowconfigure(1, weight=0)
-        
-        # Dicionário para armazenar as variáveis de cada checkbox
-        self.food_vars = {}
-          # Notebook para categorias
-        categories_notebook = ttk.Notebook(selector_frame)
-        categories_notebook.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
-        
-        # Obter categorias de alimentos
-        categories = get_food_categories()
-        
-        # Criar uma aba para cada categoria
-        for category, foods in categories.items():
-            # Frame com scroll para cada categoria
-            cat_container = ttk.Frame(categories_notebook)
-            categories_notebook.add(cat_container, text=category)
-            
-            cat_container.columnconfigure(0, weight=1)
-            cat_container.rowconfigure(0, weight=1)
-            
-            # Canvas para permitir rolagem
-            canvas = tk.Canvas(cat_container)
-            canvas.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-            
-            # Scrollbar para o canvas
-            vsb = ttk.Scrollbar(cat_container, orient=tk.VERTICAL, command=canvas.yview)
-            vsb.grid(row=0, column=1, sticky=(tk.N, tk.S))
-            canvas.configure(yscrollcommand=vsb.set)
-            
-            # Frame dentro do canvas para os checkboxes
-            category_frame = ttk.Frame(canvas)
-            canvas.create_window((0, 0), window=category_frame, anchor=tk.NW, tags="category_frame")
-            
-            # Adicionar checkboxes para cada alimento na categoria
-            for i, food_name in enumerate(sorted(foods)):
-                var = tk.BooleanVar(value=food_name in self.excluded_foods)
-                self.food_vars[food_name] = var
-                
-                checkbox = ttk.Checkbutton(category_frame, text=food_name, variable=var)
-                checkbox.grid(row=i, column=0, sticky=tk.W, pady=2)
-            
-            # Atualizar o scrollregion sempre que o tamanho do frame mudar
-            category_frame.bind("<Configure>", lambda e, c=canvas: c.configure(scrollregion=c.bbox("all")))
-        
-        # Botões Aplicar/Cancelar
-        button_frame = ttk.Frame(selector_frame)
-        button_frame.grid(row=1, column=0, sticky=(tk.E), pady=10)
-        
-        apply_button = ttk.Button(button_frame, text="Aplicar", command=self.apply_food_selection)
-        apply_button.pack(side=tk.RIGHT, padx=5)
-        
-        cancel_button = ttk.Button(button_frame, text="Cancelar", command=self.selector_window.destroy)
-        cancel_button.pack(side=tk.RIGHT, padx=5)
-    
-    def apply_food_selection(self):
-        """Aplica a seleção de alimentos excluídos"""
-        self.excluded_foods = [food for food, var in self.food_vars.items() if var.get()]
-        self.update_excluded_display()
-        self.selector_window.destroy()
-    
-    def update_excluded_display(self):
-        """Atualiza o display de alimentos excluídos"""
-        self.excluded_display.config(state=tk.NORMAL)
-        self.excluded_display.delete(1.0, tk.END)
-        
-        if self.excluded_foods:
-            self.excluded_display.insert(tk.END, ", ".join(self.excluded_foods))
-        else:
-            self.excluded_display.insert(tk.END, "Nenhum alimento excluído")
-        
-        self.excluded_display.config(state=tk.DISABLED)
-    
-    def find_food_info(self, nome_alimento):
-        """Busca informações detalhadas de um alimento pelo nome
-        
-        Args:
-            nome_alimento (str): Nome do alimento
-            
-        Returns:
-            dict or None: Dicionário com informações do alimento ou None se não encontrado
-        """
-        for food in self.all_foods:
-            if food['nome'] == nome_alimento:
-                return food
-        return None
-    
-    def get_food_category(self, nome_alimento):
-        """Obtém a categoria de um alimento pelo nome
-        
-        Args:
-            nome_alimento (str): Nome do alimento
-            
-        Returns:
-            str: Nome da categoria ou "Outros" se não encontrado
-        """
-        categorias = get_food_categories()
-        for categoria, alimentos in categorias.items():
-            if nome_alimento in alimentos:
-                return categoria
-        return "Outros"
-    
-    def create_button_frame(self, parent):
-        """Cria o frame com botões de ação"""
-        button_frame = ttk.Frame(parent)
-        button_frame.grid(row=5, columnspan=2, pady=15)
-        
-        buttons = [
-            ("Otimizar Dieta", self.run_optimization),
-            ("Limpar", self.clear_fields),
-            ("Exemplo", self.load_example)
+        # Grid para organizar entradas
+        entries_data = [
+            ("🔥 Calorias mínimas (kcal):", "cal_entry", str(DEFAULT_VALUES['calorias'])),
+            ("💪 Proteína mínima (g):", "prot_entry", str(DEFAULT_VALUES['proteina'])),
+            ("🧈 Gordura máxima (g):", "fat_entry", str(DEFAULT_VALUES['gordura'])),
+            ("💰 Orçamento máximo (R$):", "budget_entry", str(DEFAULT_VALUES['orcamento']))
         ]
+          self.entries = {}
         
-        for text, command in buttons:
-            ttk.Button(button_frame, text=text, command=command).pack(side=tk.LEFT, padx=5)
+        for i, (label_text, entry_name, placeholder) in enumerate(entries_data):
+            # Label
+            label = ttk.Label(params_frame, text=label_text, style='Modern.TLabel')
+            label.grid(row=i, column=0, sticky="w", padx=(0, 20), pady=10)
+            
+            # Entry
+            entry = ttk.Entry(params_frame, style='Modern.TEntry', font=('Segoe UI', 11))
+            entry.grid(row=i, column=1, sticky="ew", pady=10)
+            entry.insert(0, placeholder)
+            
+            # Mark as placeholder - store in dict for validation
+            self.placeholder_status[entry_name] = True
+            
+            # Efeito placeholder
+            entry.bind('<FocusIn>', lambda e, ph=placeholder, name=entry_name: self.clear_placeholder(e, ph, name))
+            entry.bind('<FocusOut>', lambda e, ph=placeholder, name=entry_name: self.restore_placeholder(e, ph, name))
+            
+            self.entries[entry_name] = entry
+            setattr(self, entry_name, entry)
+        
+        # Checkbox para limites de porção
+        checkbox_frame = ttk.Frame(params_frame, style='Modern.TFrame')
+        checkbox_frame.grid(row=len(entries_data), column=0, columnspan=2, pady=20)
+        
+        self.portion_checkbox = ttk.Checkbutton(
+            checkbox_frame,
+            text="⚖️ Usar limites de porção por categoria",
+            variable=self.use_portion_limits,
+            style='Modern.TCheckbutton'
+        )
+        self.portion_checkbox.pack()
     
-    def clear_placeholder(self, event, placeholder):
+    def create_food_exclusion_section(self):
+        """Cria a seção de exclusão de alimentos"""
+        # Frame para exclusão
+        exclusion_frame = ttk.LabelFrame(
+            self.main_frame,
+            text="🚫 Exclusão de Alimentos",
+            style='Card.TFrame',
+            padding=20
+        )
+        exclusion_frame.grid(row=2, column=0, sticky="ew", pady=(0, 20))
+        exclusion_frame.grid_columnconfigure(0, weight=1)
+        
+        # Área de exibição
+        display_frame = ttk.Frame(exclusion_frame, style='Modern.TFrame')
+        display_frame.grid(row=0, column=0, sticky="ew", pady=(0, 15))
+        display_frame.grid_columnconfigure(0, weight=1)
+        
+        self.excluded_display = tk.Text(
+            display_frame,
+            height=3,
+            wrap=tk.WORD,
+            bg=self.colors['bg_tertiary'],
+            fg=self.colors['text_primary'],
+            insertbackground=self.colors['text_primary'],
+            font=('Segoe UI', 10),
+            relief='flat',
+            padx=10,
+            pady=5
+        )
+        self.excluded_display.grid(row=0, column=0, sticky="ew")
+        self.excluded_display.insert("1.0", "Nenhum alimento excluído")
+        self.excluded_display.configure(state=tk.DISABLED)
+        
+        # Scrollbar para texto
+        text_scroll = ttk.Scrollbar(display_frame, orient="vertical", command=self.excluded_display.yview)
+        text_scroll.grid(row=0, column=1, sticky="ns")
+        self.excluded_display.configure(yscrollcommand=text_scroll.set)
+        
+        # Botão de seleção
+        select_button = self.create_modern_button(
+            exclusion_frame,
+            "🥘 Selecionar Alimentos para Excluir",
+            self.open_food_selector,
+            self.colors['accent']
+        )
+        select_button.grid(row=1, column=0, pady=(0, 10))
+    
+    def create_action_buttons(self):
+        """Cria os botões de ação"""
+        # Frame para botões
+        button_frame = ttk.Frame(self.main_frame, style='Modern.TFrame')
+        button_frame.grid(row=3, column=0, sticky="ew", pady=(0, 20))
+        button_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        
+        # Botão principal de otimização
+        optimize_button = self.create_modern_button(
+            button_frame,
+            "🚀 Otimizar Dieta",
+            self.run_optimization,
+            self.colors['success'],
+            height=50
+        )
+        optimize_button.grid(row=0, column=0, padx=5, sticky="ew")
+        
+        # Botão de exemplo
+        example_button = self.create_modern_button(
+            button_frame,
+            "📝 Carregar Exemplo",
+            self.load_example,
+            self.colors['warning']
+        )
+        example_button.grid(row=0, column=1, padx=5, sticky="ew")
+        
+        # Botão de limpar
+        clear_button = self.create_modern_button(
+            button_frame,
+            "🗑️ Limpar Tudo",
+            self.clear_fields,
+            self.colors['error']
+        )
+        clear_button.grid(row=0, column=2, padx=5, sticky="ew")
+    
+    def create_modern_button(self, parent, text, command, bg_color, height=40):
+        """Cria um botão moderno personalizado"""
+        button = tk.Button(
+            parent,
+            text=text,
+            command=command,
+            bg=bg_color,
+            fg=self.colors['bg_primary'],
+            font=('Segoe UI', 11, 'bold'),
+            relief='flat',
+            borderwidth=0,
+            height=2 if height == 40 else 3,
+            cursor='hand2'
+        )
+        
+        # Efeitos hover
+        def on_enter(e):
+            button.configure(bg=self.lighten_color(bg_color))
+            
+        def on_leave(e):
+            button.configure(bg=bg_color)
+            
+        button.bind("<Enter>", on_enter)
+        button.bind("<Leave>", on_leave)
+        
+        return button
+    
+    def lighten_color(self, color):
+        """Clareia uma cor hexadecimal"""
+        # Conversão simples para clarear cores
+        color_map = {
+            self.colors['success']: '#b8f2b8',
+            self.colors['warning']: '#ffeaa7',
+            self.colors['error']: '#ff7675',
+            self.colors['accent']: '#a2c4ff'
+        }
+        return color_map.get(color, color)
+    
+    def create_results_section(self):
+        """Cria a seção de resultados"""
+        # Frame para resultados
+        results_frame = ttk.LabelFrame(
+            self.main_frame,
+            text="📋 Resultados da Otimização",
+            style='Card.TFrame',
+            padding=20
+        )
+        results_frame.grid(row=4, column=0, sticky="nsew", pady=(0, 20))
+        results_frame.grid_columnconfigure(0, weight=1)
+        results_frame.grid_rowconfigure(0, weight=1)
+        
+        # Área de resultados com scroll
+        text_frame = ttk.Frame(results_frame, style='Modern.TFrame')
+        text_frame.grid(row=0, column=0, sticky="nsew")
+        text_frame.grid_columnconfigure(0, weight=1)
+        text_frame.grid_rowconfigure(0, weight=1)
+        
+        self.result_display = tk.Text(
+            text_frame,
+            wrap=tk.WORD,
+            bg=self.colors['bg_tertiary'],
+            fg=self.colors['text_primary'],
+            insertbackground=self.colors['text_primary'],
+            font=('Consolas', 11),
+            relief='flat',
+            padx=15,
+            pady=10,
+            state=tk.DISABLED
+        )
+        self.result_display.grid(row=0, column=0, sticky="nsew")
+        
+        # Scrollbars
+        v_scroll = ttk.Scrollbar(text_frame, orient="vertical", command=self.result_display.yview)
+        v_scroll.grid(row=0, column=1, sticky="ns")
+        
+        h_scroll = ttk.Scrollbar(text_frame, orient="horizontal", command=self.result_display.xview)
+        h_scroll.grid(row=1, column=0, sticky="ew")
+        
+        self.result_display.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
+        
+        # Texto inicial
+        self.result_display.configure(state=tk.NORMAL)
+        self.result_display.insert("1.0", "🔍 Resultados aparecerão aqui após a otimização...\n\n💡 Dica: Use o botão 'Carregar Exemplo' para testar rapidamente!")
+        self.result_display.configure(state=tk.DISABLED)
+        
+        # Configurar peso para expansão        self.main_frame.grid_rowconfigure(4, weight=1)
+    
+    def clear_placeholder(self, event, placeholder, entry_name):
         """Remove placeholder quando o campo recebe foco"""
         if event.widget.get() == placeholder:
             event.widget.delete(0, tk.END)
+            # Mark as not placeholder since user is about to enter real data
+            if hasattr(self, 'placeholder_status'):
+                self.placeholder_status[entry_name] = False
     
-    def create_result_display(self, parent):
-        """Cria a área de exibição de resultados"""
-        result_frame = ttk.LabelFrame(parent, text="Resultados", padding=10)
-        result_frame.grid(row=6, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(10, 0))
-        result_frame.columnconfigure(0, weight=1)
-        result_frame.rowconfigure(0, weight=1)
-        
-        text_frame = ttk.Frame(result_frame)
-        text_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        text_frame.columnconfigure(0, weight=1)
-        text_frame.rowconfigure(0, weight=1)
-          # Configura a área de texto para expandir com o redimensionamento da janela
-        self.result_text = tk.Text(text_frame, 
-                                 height=RESULT_DISPLAY['height'], 
-                                 width=RESULT_DISPLAY['width'], 
-                                 state=tk.DISABLED,
-                                 wrap=None,  # Muda para None para permitir rolagem horizontal
-                                 font=RESULT_DISPLAY['font'])
-        self.result_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
-        # Adiciona barras de rolagem vertical e horizontal
-        vsb = ttk.Scrollbar(text_frame, orient=tk.VERTICAL, command=self.result_text.yview)
-        vsb.grid(row=0, column=1, sticky=(tk.N, tk.S))
-        
-        hsb = ttk.Scrollbar(text_frame, orient=tk.HORIZONTAL, command=self.result_text.xview)
-        hsb.grid(row=1, column=0, sticky=(tk.W, tk.E))
-        
-        text_frame.rowconfigure(1, weight=0)  # A linha da barra de rolagem horizontal não expande
-        self.result_text.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+    def restore_placeholder(self, event, placeholder, entry_name):
+        """Restaura placeholder se o campo estiver vazio"""
+        if not event.widget.get():
+            event.widget.insert(0, placeholder)            # Mark as placeholder since we're showing placeholder text
+            if not hasattr(self, 'placeholder_status'):
+                self.placeholder_status = {}
+            self.placeholder_status[entry_name] = True
+    
+    def open_food_selector(self):
+        """Abre janela moderna para seleção de alimentos"""
+        messagebox.showinfo("Em Desenvolvimento", "Funcionalidade de seleção de alimentos será implementada em breve!")
     
     def load_example(self):
         """Carrega valores de exemplo"""
-        entries = [self.cal_entry, self.prot_entry, self.fat_entry, self.budget_entry]
-        values = [DEFAULT_VALUES['calorias'], DEFAULT_VALUES['proteina'], 
-                 DEFAULT_VALUES['gordura'], DEFAULT_VALUES['orcamento']]
-        
-        for entry, value in zip(entries, values):
+        # Limpar e inserir valores
+        for entry_name, value in [
+            ('cal_entry', str(DEFAULT_VALUES['calorias'])),
+            ('prot_entry', str(DEFAULT_VALUES['proteina'])),
+            ('fat_entry', str(DEFAULT_VALUES['gordura'])),
+            ('budget_entry', str(DEFAULT_VALUES['orcamento']))
+        ]:
+            entry = self.entries[entry_name]
             entry.delete(0, tk.END)
             entry.insert(0, value)
+            entry.configure(foreground=self.colors['text_primary'])
+            # Mark as not placeholder since these are real example values
+            if hasattr(self, 'placeholder_status'):
+                self.placeholder_status[entry_name] = False
+        
+        messagebox.showinfo("✅ Sucesso", "📝 Exemplo carregado com sucesso!")
     
     def clear_fields(self):
         """Limpa todos os campos"""
-        for entry in [self.cal_entry, self.prot_entry, self.fat_entry, self.budget_entry]:
+        # Limpar entradas
+        placeholders = [
+            str(DEFAULT_VALUES['calorias']),
+            str(DEFAULT_VALUES['proteina']),
+            str(DEFAULT_VALUES['gordura']),
+            str(DEFAULT_VALUES['orcamento'])
+        ]
+        
+        for entry_name, placeholder in zip(self.entries.keys(), placeholders):
+            entry = self.entries[entry_name]
             entry.delete(0, tk.END)
-            
+            entry.insert(0, placeholder)
+            entry.configure(foreground=self.colors['text_secondary'])
+        
         # Limpar alimentos excluídos
         self.excluded_foods = []
-        self.update_excluded_display()
         
-        self.result_text.config(state=tk.NORMAL)
-        self.result_text.delete(1.0, tk.END)
-        self.result_text.config(state=tk.DISABLED)
+        # Limpar resultados
+        self.result_display.configure(state=tk.NORMAL)
+        self.result_display.delete("1.0", tk.END)
+        self.result_display.insert("1.0", "🔍 Resultados aparecerão aqui após a otimização...\n\n💡 Dica: Use o botão 'Carregar Exemplo' para testar rapidamente!")
+        self.result_display.configure(state=tk.DISABLED)
+        
+        messagebox.showinfo("✅ Sucesso", "🗑️ Todos os campos foram limpos!")
+    
+    def validate_inputs(self):
+        """Valida e converte os valores de entrada usando detecção por cor"""
+        try:
+            values = []
+            entries = [self.entries['cal_entry'], self.entries['prot_entry'], 
+                      self.entries['fat_entry'], self.entries['budget_entry']]
+            names = VALIDATION_NAMES
+            defaults = [str(DEFAULT_VALUES['calorias']), str(DEFAULT_VALUES['proteina']), 
+                       str(DEFAULT_VALUES['gordura']), str(DEFAULT_VALUES['orcamento'])]
+              for entry, name, default in zip(entries, names, defaults):
+                value_str = entry.get().strip()
+                entry_color = str(entry.cget('foreground'))  # Convert Tcl_Obj to string
+                
+                # Verificação simplificada: 
+                # 1. Campo vazio é sempre inválido
+                # 2. Valor igual ao default COM cor secundária = placeholder (inválido)
+                # 3. Valor igual ao default COM cor primária = válido (load_example ou input manual)
+                # 4. Qualquer outro valor com cor primária = válido
+                
+                if not value_str:
+                    messagebox.showerror("❌ Campo Vazio", 
+                                       f"O campo {name} está vazio!\n\n"
+                                       f"💡 Dica: Clique no campo e insira um valor válido ou use 'Carregar Exemplo'.")
+                    entry.focus()
+                    return None
+                
+                # Se o valor é igual ao default mas a cor é secundária, é placeholder
+                if value_str == default and entry_color == self.colors['text_secondary']:
+                    messagebox.showerror("❌ Valor Placeholder", 
+                                       f"O campo {name} contém texto placeholder!\n\n"
+                                       f"💡 Dica: Clique no campo e insira um valor válido ou use 'Carregar Exemplo'.")
+                    entry.focus()
+                    return None
+                
+                # Validar se é um número válido
+                try:
+                    value = float(value_str)
+                    if value <= 0:
+                        messagebox.showerror("❌ Valor Inválido", 
+                                           f"O campo {name} deve conter um valor positivo!\n\n"
+                                           f"💡 Valor inserido: {value_str}\n"
+                                           f"💡 Dica: Insira um número maior que zero.")
+                        entry.focus()
+                        return None
+                    values.append(value)
+                    
+                except ValueError:
+                    messagebox.showerror("❌ Formato Inválido", 
+                                       f"O campo {name} deve conter um número válido!\n\n"
+                                       f"💡 Valor inserido: '{value_str}'\n"
+                                       f"💡 Dica: Use apenas números (ex: 2000, 50.5)")
+                    entry.focus()
+                    return None
+            
+            # Adicionar lista de alimentos excluídos e uso de limites
+            values.append(self.excluded_foods if self.excluded_foods else None)
+            values.append(self.use_portion_limits.get())
+            
+            return tuple(values)
+            
+        except Exception as e:
+            messagebox.showerror("❌ Erro Inesperado", f"Erro na validação: {str(e)}")
+            return None
     
     def run_optimization(self):
         """Executa a otimização e exibe os resultados"""
@@ -339,199 +496,120 @@ class DietApp:
             if not inputs:
                 return
             
-            self.show_processing_message()
+            # Mostrar mensagem de processamento
+            self.result_display.configure(state=tk.NORMAL)
+            self.result_display.delete("1.0", tk.END)
+            
+            loading_text = """🚀 INICIANDO OTIMIZAÇÃO...
+
+🔄 Processando parâmetros nutricionais...
+🧮 Executando algoritmo de programação linear...
+📊 Analisando combinações de alimentos...
+⚖️ Aplicando restrições de porção...
+💰 Calculando custo mínimo...
+
+⏳ Por favor, aguarde alguns segundos..."""
+            
+            self.result_display.insert("1.0", loading_text)
+            self.result_display.configure(state=tk.DISABLED)
             self.root.update()
             
+            # Executar otimização
             resultado = optimize_diet(*inputs)
             self.show_results(resultado)
             
         except Exception as e:
-            messagebox.showerror("Erro", f"Ocorreu um erro durante a otimização:\n{str(e)}")
-    
-    def show_processing_message(self):
-        """Mostra mensagem de processamento"""
-        self.result_text.config(state=tk.NORMAL)
-        self.result_text.delete(1.0, tk.END)
-        self.result_text.insert(tk.END, "Processando otimização...\n")
-        self.result_text.config(state=tk.DISABLED)
-    
-    def validate_inputs(self):
-        """Valida e converte os valores de entrada"""
-        try:
-            values = []
-            entries = [self.cal_entry, self.prot_entry, self.fat_entry, self.budget_entry]
-            
-            for entry, name in zip(entries, VALIDATION_NAMES):
-                value_str = entry.get().replace("Ex: ", "").strip()
-                if not value_str:
-                    messagebox.showerror("Erro", f"Campo {name} está vazio!")
-                    return None
-                
-                value = float(value_str)
-                if value <= 0:
-                    messagebox.showerror("Erro", f"{name} deve ser maior que zero!")
-                    return None
-                values.append(value)
-            
-            # Adicionar a lista de alimentos excluídos
-            values.append(self.excluded_foods if self.excluded_foods else None)
-            
-            # Adicionar o uso de limites de porção
-            values.append(self.use_portion_limits.get())
-            
-            return tuple(values)
-            
-        except ValueError:
-            messagebox.showerror("Erro", "Valores inválidos! Use apenas números.")
-            return None
+            messagebox.showerror("❌ Erro na Otimização", 
+                               f"Ocorreu um erro durante a otimização:\n\n{str(e)}\n\n"
+                               f"💡 Verifique se todos os valores estão corretos e tente novamente.")
     
     def show_results(self, resultado):
-        """Atualiza a área de resultados com os dados da otimização"""
-        self.result_text.config(state=tk.NORMAL)
-        self.result_text.delete(1.0, tk.END)
+        """Exibe os resultados da otimização"""
+        self.result_display.configure(state=tk.NORMAL)
+        self.result_display.delete("1.0", tk.END)
         
         if resultado['status'] == 'Optimal':
             self.display_success_results(resultado)
         else:
-            self.display_error_message(resultado['status'])
+            self.display_error_results(resultado)
         
-        self.result_text.config(state=tk.DISABLED)
+        self.result_display.configure(state=tk.DISABLED)
     
     def display_success_results(self, resultado):
         """Exibe os resultados de uma solução bem-sucedida"""
-        self.result_text.insert(tk.END, "=" * 50 + "\n")
-        self.result_text.insert(tk.END, "           DIETA OTIMIZADA\n")
-        self.result_text.insert(tk.END, "=" * 50 + "\n\n")
+        text = ""
+        text += "🎉 " + "═" * 80 + "\n"
+        text += "                    ✅ DIETA OTIMIZADA COM SUCESSO!\n"
+        text += "🎉 " + "═" * 80 + "\n\n"
         
-        # Lista de alimentos recomendados
-        self.result_text.insert(tk.END, "ALIMENTOS RECOMENDADOS:\n")
-        self.result_text.insert(tk.END, "-" * 70 + "\n")
+        # Resumo nutricional destacado com caixas
+        text += "┌─ 📊 RESUMO NUTRICIONAL ─────────────────────────────────────────┐\n"
+        text += f"│ 🔥 Calorias totais: {resultado['detalhes']['calorias_total']:>15.1f} kcal          │\n"
+        text += f"│ 💪 Proteína total:  {resultado['detalhes']['proteina_total']:>15.1f} g             │\n"
+        text += f"│ 🧈 Gordura total:   {resultado['detalhes']['gordura_total']:>15.1f} g             │\n"
+        text += f"│ 💰 Custo total:     R$ {resultado['custo_total']:>12.2f}                 │\n"
+        text += "└─────────────────────────────────────────────────────────────────┘\n\n"
+          # Lista básica de alimentos
+        text += "🥘 ALIMENTOS SELECIONADOS:\n\n"
+        for alimento in resultado['alimentos']:
+            emoji = self.get_food_emoji(alimento['nome'])
+            text += f"{emoji} {alimento['nome']}\n"
+            text += f"   📏 {alimento['quantidade']:.1f}g | "
+            text += f"🔥 {alimento['calorias']:.1f}kcal | "
+            text += f"💪 {alimento['proteina']:.1f}g | "
+            text += f"💰 R$ {alimento['custo']:.2f}\n\n"
         
-        # Cabeçalho da tabela
-        self.result_text.insert(tk.END, f"{'Nome':<20} {'Qtd':>6} {'Limite':>8} {'R$/porção':>10} {'R$ Total':>10}\n")
-        self.result_text.insert(tk.END, "-" * 70 + "\n")
+        self.result_display.insert("1.0", text)
+    
+    def display_error_results(self, resultado):
+        """Exibe resultados quando não há solução viável"""
+        text = ""
+        text += "❌ " + "═" * 70 + "\n"
+        text += "                 ⚠️ NENHUMA SOLUÇÃO ENCONTRADA\n"
+        text += "❌ " + "═" * 70 + "\n\n"
         
-        alimentos_utilizados = []
-        for alimento, qtd in resultado['quantidades'].items():
-            if qtd > NUMERICAL_TOLERANCE:
-                food_info = self.find_food_info(alimento)
-                alimentos_utilizados.append((alimento, qtd, food_info))
+        text += f"🔍 Status: {resultado['status']}\n"
+        text += f"📝 Detalhes: Não foi possível encontrar uma combinação de alimentos que atenda a todos os critérios.\n\n"
         
-        if alimentos_utilizados:
-            for alimento, qtd, food_info in sorted(alimentos_utilizados, key=lambda x: x[1], reverse=True):
-                custo_total = qtd * food_info['preco']
-                limite_str = f"{food_info.get('max_portions_daily', 'N/A'):.1f}"
-                self.result_text.insert(tk.END, f"• {alimento:<18} {qtd:>6.2f} {limite_str:>8} " + 
-                                              f"{food_info['preco']:>10.2f} {custo_total:>10.2f}\n")
+        text += "💡 SUGESTÕES:\n"
+        text += "• 📈 Aumente o orçamento máximo\n"
+        text += "• 📉 Reduza os valores mínimos de calorias ou proteína\n"
+        text += "• 📊 Aumente o limite máximo de gordura\n"
+        text += "• 🔄 Tente diferentes combinações de parâmetros\n"
+        
+        self.result_display.insert("1.0", text)
+    
+    def get_food_emoji(self, food_name):
+        """Retorna emoji apropriado para o alimento"""
+        food_name_lower = food_name.lower()
+        
+        if any(word in food_name_lower for word in ['frango', 'carne', 'boi', 'porco', 'peixe', 'salmão', 'atum']):
+            return '🥩'
+        elif any(word in food_name_lower for word in ['ovo', 'clara']):
+            return '🥚'
+        elif any(word in food_name_lower for word in ['leite', 'iogurte', 'queijo']):
+            return '🥛'
+        elif any(word in food_name_lower for word in ['banana', 'maçã', 'laranja', 'fruta']):
+            return '🍎'
+        elif any(word in food_name_lower for word in ['arroz', 'feijão', 'aveia', 'pão']):
+            return '🌾'
+        elif any(word in food_name_lower for word in ['azeite', 'óleo', 'manteiga']):
+            return '🫒'
+        elif any(word in food_name_lower for word in ['alface', 'tomate', 'cenoura', 'vegetal']):
+            return '🥬'
         else:
-            self.result_text.insert(tk.END, "Nenhum alimento necessário.\n")
-        
-        # Resumo nutricional
-        self.result_text.insert(tk.END, f"\n{'RESUMO NUTRICIONAL:'}\n")
-        self.result_text.insert(tk.END, "-" * 40 + "\n")
-        self.result_text.insert(tk.END, f"Calorias totais: {resultado['detalhes']['calorias_total']:>10.1f} kcal\n")
-        self.result_text.insert(tk.END, f"Proteína total:  {resultado['detalhes']['proteina_total']:>10.1f} g\n")
-        self.result_text.insert(tk.END, f"Gordura total:   {resultado['detalhes']['gordura_total']:>10.1f} g\n")
-        
-        # Custo total
-        self.result_text.insert(tk.END, f"\n{'CUSTO:'}\n")
-        self.result_text.insert(tk.END, "-" * 40 + "\n")
-        self.result_text.insert(tk.END, f"Custo total:     R$ {resultado['custo_total']:>10.2f}\n")
-        
-        # Informações sobre porções
-        self.result_text.insert(tk.END, f"\n{'INFORMAÇÕES SOBRE PORÇÕES:'}\n")
-        self.result_text.insert(tk.END, "-" * 40 + "\n")
-        self.result_text.insert(tk.END, "Uma porção de cada alimento contém:\n\n")
-        
-        # Buscar alimentos utilizados e mostrar detalhes de cada porção
-        categorias = {}
-        for alimento, qtd in resultado['quantidades'].items():
-            if qtd > NUMERICAL_TOLERANCE:
-                food_info = self.find_food_info(alimento)
-                if food_info:
-                    categoria = self.get_food_category(alimento)
-                    if categoria not in categorias:
-                        categorias[categoria] = []
-                    categorias[categoria].append((alimento, food_info))
-        
-        # Mostrar por categoria
-        for categoria, alimentos in sorted(categorias.items()):
-            self.result_text.insert(tk.END, f"{categoria}:\n")
-            for alimento, info in alimentos:
-                self.result_text.insert(tk.END, f"• {alimento:<15}: {info['calorias']:>5} kcal, " + 
-                                            f"{info['proteina']:>4}g prot, " + 
-                                            f"{info['gordura']:>4}g gord, " + 
-                                            f"R${info['preco']:>5.2f}\n")
-            self.result_text.insert(tk.END, "\n")
-        
-        # Informações sobre limites de porção
-        self.result_text.insert(tk.END, f"\n{'LIMITES DE PORÇÃO POR CATEGORIA:'}\n")
-        self.result_text.insert(tk.END, "-" * 40 + "\n")
-        
-        from config.constants import CATEGORY_PORTION_LIMITS
-        for categoria, limites in CATEGORY_PORTION_LIMITS.items():
-            self.result_text.insert(tk.END, f"{categoria}:\n")
-            self.result_text.insert(tk.END, f"  Mín: {limites['min_daily']:.1f} - Máx: {limites['max_daily']:.1f} porções/dia\n")
-        
-        self.result_text.insert(tk.END, "\n" + "=" * 50 + "\n")
+            return '🥘'
     
-    def display_error_message(self, status):
-        """Exibe mensagem para casos sem solução"""
-        self.result_text.insert(tk.END, "=" * 50 + "\n")
-        self.result_text.insert(tk.END, "        PROBLEMA SEM SOLUÇÃO\n")
-        self.result_text.insert(tk.END, "=" * 50 + "\n\n")
-        
-        self.result_text.insert(tk.END, f"Status: {status}\n\n")
-        self.result_text.insert(tk.END, "Não foi possível encontrar uma solução viável\n")
-        self.result_text.insert(tk.END, "com as restrições especificadas.\n\n")
-        
-        self.result_text.insert(tk.END, "SUGESTÕES:\n")
-        self.result_text.insert(tk.END, "-" * 20 + "\n")
-        self.result_text.insert(tk.END, "• Aumente o orçamento disponível\n")
-        self.result_text.insert(tk.END, "• Reduza as exigências de calorias ou proteína\n")
-        self.result_text.insert(tk.END, "• Aumente o limite de gordura\n")
-        self.result_text.insert(tk.END, "• Verifique se os valores estão realistas\n")
-    
-    def on_frame_configure(self, event):
-        """Atualiza a região de scroll quando o frame muda de tamanho"""
-        self.main_canvas.configure(scrollregion=self.main_canvas.bbox("all"))
-    
-    def on_canvas_configure(self, event):
-        """Ajusta o tamanho do frame quando o canvas é redimensionado"""
-        canvas_width = event.width
-        canvas_height = event.height
-        
-        # Obter o frame dentro do canvas
-        frame = self.main_canvas.nametowidget(self.main_canvas.itemcget(self.canvas_frame_id, "window"))
-        
-        # Definir largura mínima e altura mínima para o frame
-        min_width = 600  # Largura mínima desejada
-        min_height = 700  # Altura mínima desejada
-        
-        # Usar o maior valor entre o tamanho do canvas e o tamanho mínimo
-        frame_width = max(canvas_width - 20, min_width)  # -20 para padding
-        frame_height = max(canvas_height - 20, min_height)  # -20 para padding
-        
-        # Configurar o tamanho do frame
-        self.main_canvas.itemconfig(self.canvas_frame_id, width=frame_width, height=frame_height)
-    
-    def bind_mousewheel(self):
-        """Configura o scroll com a roda do mouse"""
-        def on_mousewheel(event):
-            self.main_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-        
-        def on_shift_mousewheel(event):
-            self.main_canvas.xview_scroll(int(-1 * (event.delta / 120)), "units")
-        
-        # Bind para Windows
-        self.main_canvas.bind("<MouseWheel>", on_mousewheel)
-        self.main_canvas.bind("<Shift-MouseWheel>", on_shift_mousewheel)
-        
-        # Bind para Linux
-        self.main_canvas.bind("<Button-4>", lambda e: self.main_canvas.yview_scroll(-1, "units"))
-        self.main_canvas.bind("<Button-5>", lambda e: self.main_canvas.yview_scroll(1, "units"))
-        self.main_canvas.bind("<Shift-Button-4>", lambda e: self.main_canvas.xview_scroll(-1, "units"))
-        self.main_canvas.bind("<Shift-Button-5>", lambda e: self.main_canvas.xview_scroll(1, "units"))
-        
-        # Dar foco ao canvas para permitir scroll
-        self.main_canvas.focus_set()
+    def run(self):
+        """Inicia o loop principal da aplicação"""
+        self.root.mainloop()
+
+
+def main():
+    """Função principal para executar a aplicação"""
+    app = DietApp()
+    app.run()
+
+
+if __name__ == "__main__":
+    main()

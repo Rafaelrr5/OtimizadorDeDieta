@@ -10,14 +10,9 @@ from gui.diet_interface import DietApp
 
 def main():
     """Função principal da aplicação"""
-    # Criar janela principal
-    root = tk.Tk()
-    
-    # Inicializar aplicação
-    app = DietApp(root)
-    
-    # Executar loop principal
-    root.mainloop()
+    # Inicializar e executar aplicação
+    app = DietApp()
+    app.run()
 
 if __name__ == "__main__":
     main()

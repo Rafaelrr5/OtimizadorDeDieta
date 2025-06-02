@@ -382,22 +382,22 @@ class DietApp:
     
     def load_example(self):
         """Carrega valores de exemplo"""
-        # Limpar e inserir valores
-        for entry_name, value in [
-            ('cal_entry', str(DEFAULT_VALUES['calorias'])),
-            ('prot_entry', str(DEFAULT_VALUES['proteina'])),
-            ('fat_entry', str(DEFAULT_VALUES['gordura'])),
-            ('budget_entry', str(DEFAULT_VALUES['orcamento']))
-        ]:
-            entry = self.entries[entry_name]
-            entry.delete(0, tk.END)
-            entry.insert(0, value)
-            entry.configure(foreground=self.colors['text_primary'])
-            # Mark as not placeholder since these are real example values
-            if hasattr(self, 'placeholder_status'):
-                self.placeholder_status[entry_name] = False
-        
-        messagebox.showinfo("✅ Sucesso", "📝 Exemplo carregado com sucesso!")
+        # Carregar exemplo de parâmetros: 3100 kcal, 120g proteína, 140g gordura
+        # Limpar exclusões
+        self.excluded_foods = []
+        self.excluded_display.configure(state='normal')
+        self.excluded_display.delete('1.0', 'end')
+        self.excluded_display.insert('1.0', 'Nenhum alimento excluído')
+        self.excluded_display.configure(state='disabled')
+        # Preencher campos
+        self.entries['cal_entry'].delete(0, 'end')
+        self.entries['cal_entry'].insert(0, '3100')
+        self.entries['prot_entry'].delete(0, 'end')
+        self.entries['prot_entry'].insert(0, '120')
+        self.entries['fat_entry'].delete(0, 'end')
+        self.entries['fat_entry'].insert(0, '140')
+        # Orçamento permanece padrão
+        messagebox.showinfo('Exemplo Carregado', 'Exemplo carregado: 3100 kcal, 120g proteína, 140g gordura.')
     
     def clear_fields(self):
         """Limpa todos os campos"""

@@ -177,22 +177,24 @@ def exemplo_otimizacao_dieta():
     """Exemplo de uso da otimização de dieta com valores realistas.
     
     Esta função demonstra como usar o otimizador de dieta com valores
-    nutricionais próximos da realidade para um adulto médio.
+    nutricionais personalizados: 384g carboidratos, 120g proteínas, 140g gorduras e meta de 3100 kcal.
     
     Valores utilizados:
-    - Calorias: 2000 kcal (mínimo diário para um adulto médio)
-    - Proteínas: 50g (mínimo diário recomendado para adulto médio)
-    - Gorduras: 65g (máximo diário, ~30% das calorias totais)
+    - Carboidratos: 384g (meta diária)
+    - Calorias: 3100 kcal (meta diária)
+    - Proteínas: 120g (meta diária)
+    - Gorduras: 140g (limite diário)
     - Orçamento: R$ 50,00 (valor diário realista)
     
     Returns:
         dict: Resultado da otimização com alimentos, quantidades e valores nutricionais
     """
-    # Valores nutricionais realistas (alinhados com constants.py)
-    calorias_min = 2000    # kcal mínimas diárias
-    proteina_min = 50      # gramas mínimas diárias
-    gordura_max = 65       # gramas máximas diárias
+    # Valores nutricionais personalizados
+    calorias_min = 3100    # kcal mínimas diárias
+    proteina_min = 120     # gramas mínimas diárias
+    gordura_max = 140      # gramas máximas diárias
     orcamento_max = 50.0   # orçamento diário em R$
+    carboidratos_target = 384  # gramas de carboidratos meta diária
     
     # Alimentos que desejamos excluir (opcional)
     # Verificar que estes alimentos existem na base de dados
@@ -219,6 +221,7 @@ def exemplo_otimizacao_dieta():
         print(f"\nCusto total: R$ {resultado['custo_total']:.2f}")
         print("\nNutrientes totais:")
         print(f"- Calorias: {resultado['detalhes']['calorias_total']:.2f} kcal")
+        print(f"- Carboidratos (meta): {carboidratos_target}g")
         print(f"- Proteínas: {resultado['detalhes']['proteina_total']:.2f}g")
         print(f"- Gorduras: {resultado['detalhes']['gordura_total']:.2f}g")
     else:

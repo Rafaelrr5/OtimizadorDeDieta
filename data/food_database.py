@@ -12,6 +12,7 @@ def get_food_data():
     - calorias: kcal por porção
     - proteina: gramas de proteína por porção
     - gordura: gramas de gordura por porção
+    - carboidrato: gramas de carboidrato por porção
     - preco: custo em R$ por porção
     - max_portions_daily: máximo de porções por dia
     - min_portions_daily: mínimo de porções por dia
@@ -21,37 +22,41 @@ def get_food_data():
     """
     base_foods = [
         # Cereais e grãos
-        {"nome": "Arroz", "calorias": 2600, "proteina": 48.0, "gordura": 4.0, "preco": 7.00, "categoria": "Cereais e Grãos", "porcao": "1kg", "carboidratos": 280.0},
-        {"nome": "Feijao", "calorias": 2533.33, "proteina": 156.67, "gordura": 16.67, "preco": 8.00, "categoria": "Cereais e Grãos", "porcao": "1kg", "carboidratos": 230.0},
-        {"nome": "Macarrao", "calorias": 987.5, "proteina": 36.25, "gordura": 5.625, "preco": 4.00, "categoria": "Cereais e Grãos", "porcao": "500g", "carboidratos": 375.0},
-        {"nome": "Aveia", "calorias": 370.0, "proteina": 12.5, "gordura": 6.25, "preco": 1.50, "categoria": "Cereais e Grãos", "porcao": "100g", "carboidratos": 60.0},
-        {"nome": "Pao Integral", "calorias": 130, "proteina": 5.0, "gordura": 2.5, "preco": 0.70, "categoria": "Cereais e Grãos", "porcao": "50g", "carboidratos": 24.0},
+        {"nome": "Arroz branco cozido", "calorias": 100, "proteina": 2.0, "gordura": 0.3, "carboidrato": 22.0, "preco": 0.70, "categoria": "Cereais e Grãos", "porcao": "4 colheres (80g)"},
+        {"nome": "Feijão cozido", "calorias": 90, "proteina": 6.0, "gordura": 0.5, "carboidrato": 15.0, "preco": 1.00, "categoria": "Cereais e Grãos", "porcao": "1 concha (80g)"},
+        {"nome": "Macarrão cozido", "calorias": 300, "proteina": 10.0, "gordura": 1.0, "carboidrato": 62.0, "preco": 1.50, "categoria": "Cereais e Grãos", "porcao": "80g (cru)"},
+        {"nome": "Aveia", "calorias": 140, "proteina": 5.0, "gordura": 3.0, "carboidrato": 25.0, "preco": 1.20, "categoria": "Cereais e Grãos", "porcao": "40g (4 colheres)"},
+        {"nome": "Pão francês", "calorias": 135, "proteina": 4.0, "gordura": 1.0, "carboidrato": 27.0, "preco": 0.50, "categoria": "Cereais e Grãos", "porcao": "1 unidade (50g)"},
+        {"nome": "Farinha Láctea", "calorias": 110, "proteina": 3.0, "gordura": 0.5, "carboidrato": 23.0, "preco": 1.80, "categoria": "Cereais e Grãos", "porcao": "2 colheres (30g)"},
+        {"nome": "Batata inglesa", "calorias": 78, "proteina": 2.0, "gordura": 0.0, "carboidrato": 18.0, "preco": 0.60, "categoria": "Cereais e Grãos", "porcao": "150g (1 unidade)"},
+        {"nome": "Batata-doce", "calorias": 77, "proteina": 0.6, "gordura": 0.1, "carboidrato": 18.4, "preco": 0.80, "categoria": "Cereais e Grãos", "porcao": "100g"},
         
         # Proteínas
-        {"nome": "Frango", "calorias": 1650, "proteina": 310.0, "gordura": 36.0, "preco": 15.00, "categoria": "Proteínas", "porcao": "1kg", "carboidratos": 0.0},
-        {"nome": "Carne Bovina", "calorias": 217, "proteina": 26.0, "gordura": 12.0, "preco": 4.00, "categoria": "Proteínas", "porcao": "100g", "carboidratos": 0.0},
-        {"nome": "Peixe", "calorias": 129, "proteina": 26.0, "gordura": 2.7, "preco": 3.00, "categoria": "Proteínas", "porcao": "100g", "carboidratos": 0.0},
-        {"nome": "Ovos", "calorias": 1360, "proteina": 120.0, "gordura": 100.0, "preco": 17.00, "categoria": "Proteínas", "porcao": "20 unidades", "carboidratos": 7.0},
-        {"nome": "Queijo", "calorias": 3333.33, "proteina": 233.33, "gordura": 266.67, "preco": 30.00, "categoria": "Proteínas", "porcao": "1kg", "carboidratos": 20.0},
+        {"nome": "Frango grelhado", "calorias": 159, "proteina": 32.0, "gordura": 2.5, "carboidrato": 0.0, "preco": 3.50, "categoria": "Proteínas", "porcao": "100g"},
+        {"nome": "Carne moída magra", "calorias": 170, "proteina": 26.0, "gordura": 8.0, "carboidrato": 0.0, "preco": 4.00, "categoria": "Proteínas", "porcao": "100g"},
+        {"nome": "Atum em água", "calorias": 130, "proteina": 30.0, "gordura": 1.0, "carboidrato": 0.0, "preco": 6.50, "categoria": "Proteínas", "porcao": "1 lata (170g)"},
+        {"nome": "Ovo cozido", "calorias": 73, "proteina": 6.6, "gordura": 4.7, "carboidrato": 0.3, "preco": 0.80, "categoria": "Proteínas", "porcao": "1 unidade (50g)"},
+        {"nome": "Queijo mussarela", "calorias": 99, "proteina": 6.8, "gordura": 7.6, "carboidrato": 0.9, "preco": 2.50, "categoria": "Proteínas", "porcao": "1 fatia (30g)"},
+        {"nome": "Pasta de Amendoim", "calorias": 88, "proteina": 4.0, "gordura": 7.5, "carboidrato": 3.0, "preco": 1.30, "categoria": "Proteínas", "porcao": "1 colher (15g)"},
         
         # Laticínios
-        {"nome": "Leite", "calorias": 650, "proteina": 33.0, "gordura": 37.0, "preco": 5.00, "categoria": "Laticínios", "porcao": "1L", "carboidratos": 50.0},
-        {"nome": "Iogurte", "calorias": 500, "proteina": 25.0, "gordura": 17.5, "preco": 12.79, "categoria": "Laticínios", "porcao": "1kg", "carboidratos": 47.0},
+        {"nome": "Leite integral", "calorias": 128, "proteina": 8.0, "gordura": 5.0, "carboidrato": 12.0, "preco": 1.50, "categoria": "Laticínios", "porcao": "1 copo (250ml)"},
+        {"nome": "Iogurte natural", "calorias": 62, "proteina": 5.7, "gordura": 0.45, "carboidrato": 8.7, "preco": 2.00, "categoria": "Laticínios", "porcao": "1 pote (150g)"},
         
         # Vegetais
-        {"nome": "Brócolis", "calorias": 35, "proteina": 2.4, "gordura": 0.4, "preco": 1.50, "categoria": "Vegetais", "porcao": "80g", "carboidratos": 5.6},
-        {"nome": "Cenoura", "calorias": 41, "proteina": 0.9, "gordura": 0.2, "preco": 0.80, "categoria": "Vegetais", "porcao": "50g", "carboidratos": 5.0},
-        {"nome": "Tomate", "calorias": 18, "proteina": 0.9, "gordura": 0.2, "preco": 1.20, "categoria": "Vegetais", "porcao": "100g", "carboidratos": 4.0},
-        {"nome": "Alface", "calorias": 15, "proteina": 1.4, "gordura": 0.2, "preco": 0.50, "categoria": "Vegetais", "porcao": "50g", "carboidratos": 1.0},
+        {"nome": "Brócolis", "calorias": 35, "proteina": 2.4, "gordura": 0.4, "carboidrato": 7.0, "preco": 1.50, "categoria": "Vegetais", "porcao": "80g"},
+        {"nome": "Cenoura", "calorias": 41, "proteina": 0.9, "gordura": 0.2, "carboidrato": 9.5, "preco": 0.80, "categoria": "Vegetais", "porcao": "50g"},
+        {"nome": "Tomate", "calorias": 18, "proteina": 0.9, "gordura": 0.2, "carboidrato": 3.9, "preco": 1.20, "categoria": "Vegetais", "porcao": "100g"},
+        {"nome": "Alface", "calorias": 15, "proteina": 1.4, "gordura": 0.2, "carboidrato": 2.9, "preco": 0.50, "categoria": "Vegetais", "porcao": "50g"},
         
         # Frutas
-        {"nome": "Banana", "calorias": 89, "proteina": 1.1, "gordura": 0.3, "preco": 3.00, "categoria": "Frutas", "porcao": "1 unidade (120g)", "carboidratos": 27.6},
-        {"nome": "Maçã", "calorias": 52, "proteina": 0.3, "gordura": 0.2, "preco": 14.00, "categoria": "Frutas", "porcao": "1 unidade (150g)", "carboidratos": 20.7},
-        {"nome": "Laranja", "calorias": 47, "proteina": 0.9, "gordura": 0.1, "preco": 0.80, "categoria": "Frutas", "porcao": "1 unidade (150g)", "carboidratos": 17.7},
+        {"nome": "Banana nanica", "calorias": 98, "proteina": 1.3, "gordura": 0.1, "carboidrato": 26.0, "preco": 0.50, "categoria": "Frutas", "porcao": "1 unidade (100g)"},
+        {"nome": "Maçã", "calorias": 84, "proteina": 0.5, "gordura": 0.0, "carboidrato": 22.0, "preco": 1.20, "categoria": "Frutas", "porcao": "1 unidade (150g)"},
+        {"nome": "Laranja", "calorias": 47, "proteina": 0.9, "gordura": 0.1, "carboidrato": 11.8, "preco": 0.80, "categoria": "Frutas", "porcao": "1 unidade (150g)"},
         
         # Óleos e gorduras
-        {"nome": "Azeite", "calorias": 8800, "proteina": 0.0, "gordura": 1000.0, "preco": 50.00, "categoria": "Óleos e Gorduras", "porcao": "1L", "carboidratos": 0.0},
-        {"nome": "Manteiga", "calorias": 102, "proteina": 0.1, "gordura": 11.5, "preco": 0.42, "categoria": "Óleos e Gorduras", "porcao": "10g", "carboidratos": 0.1},
+        {"nome": "Azeite", "calorias": 72, "proteina": 0.0, "gordura": 8.0, "carboidrato": 0.0, "preco": 1.00, "categoria": "Óleos e Gorduras", "porcao": "1 colher (10g)"},
+        {"nome": "Manteiga", "calorias": 102, "proteina": 0.1, "gordura": 11.5, "carboidrato": 0.0, "preco": 0.42, "categoria": "Óleos e Gorduras", "porcao": "10g"},
     ]
     
     # Adicionar limites de porção baseados na categoria
@@ -64,6 +69,13 @@ def get_food_data():
             food['max_portions_daily'] = 10.0  # padrão
             food['min_portions_daily'] = 0.0   # padrão
     
+    # Adicionar observações para tabela nutricional
+    food_observations = [
+        "Valores podem variar conforme método de preparo e marca do produto.",
+        "Dados baseados em tabelas nutricionais médias (TBCA, TACO).",
+        "Porções referem-se a medidas caseiras comuns."
+    ]
+    
     return base_foods
 
 def get_food_categories():
@@ -75,11 +87,11 @@ def get_food_categories():
     alimentos = get_food_data()
     
     categorias = {
-        'Cereais e Grãos': ['Arroz', 'Feijao', 'Macarrao', 'Aveia', 'Pao Integral'],
-        'Proteínas': ['Frango', 'Carne Bovina', 'Peixe', 'Ovos', 'Queijo'],
-        'Laticínios': ['Leite', 'Iogurte'],
+        'Cereais e Grãos': ['Arroz branco cozido', 'Feijão cozido', 'Macarrão cozido', 'Aveia', 'Pão francês', 'Farinha Láctea', 'Batata inglesa', 'Batata-doce'],
+        'Proteínas': ['Frango grelhado', 'Carne moída magra', 'Atum em água', 'Ovo cozido', 'Queijo mussarela', 'Pasta de Amendoim'],
+        'Laticínios': ['Leite integral', 'Iogurte natural'],
         'Vegetais': ['Brócolis', 'Cenoura', 'Tomate', 'Alface'],
-        'Frutas': ['Banana', 'Maçã', 'Laranja'],
+        'Frutas': ['Banana nanica', 'Maçã', 'Laranja'],
         'Óleos e Gorduras': ['Azeite', 'Manteiga']
     }
     
@@ -101,3 +113,15 @@ def get_food_by_name(nome):
             return alimento
     
     return None
+
+def get_food_observations():
+    """Retorna observações sobre os dados nutricionais
+    
+    Returns:
+        list: Lista de strings com observações sobre os dados
+    """
+    return [
+        "Valores podem variar conforme método de preparo e marca do produto.",
+        "Dados baseados em tabelas nutricionais médias (TBCA, TACO).",
+        "Porções referem-se a medidas caseiras comuns."
+    ]

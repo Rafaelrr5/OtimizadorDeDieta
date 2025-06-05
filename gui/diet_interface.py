@@ -118,7 +118,8 @@ class DietApp:
         # Bind scroll com mouse
         def on_mousewheel(event):
             main_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        main_canvas.bind("<MouseWheel>", on_mousewheel)
+        # Ensure mouse wheel scrolls the page regardless of widget focus
+        self.root.bind_all("<MouseWheel>", on_mousewheel)
         
         # Configurar grid do frame principal
         self.main_frame.grid_columnconfigure(0, weight=1)
@@ -382,7 +383,7 @@ class DietApp:
     
     def load_example(self):
         """Carrega valores de exemplo"""
-        # Carregar exemplo de parâmetros: 3100 kcal, 120g proteína, 140g gordura
+        # Carregar exemplo de parâmetros a partir de DEFAULT_VALUES
         # Limpar exclusões
         self.excluded_foods = []
         self.excluded_display.configure(state='normal')
@@ -390,14 +391,14 @@ class DietApp:
         self.excluded_display.insert('1.0', 'Nenhum alimento excluído')
         self.excluded_display.configure(state='disabled')
         # Preencher campos
-        self.entries['cal_entry'].delete(0, 'end')
-        self.entries['cal_entry'].insert(0, '3100')
-        self.entries['prot_entry'].delete(0, 'end')
-        self.entries['prot_entry'].insert(0, '120')
-        self.entries['fat_entry'].delete(0, 'end')
-        self.entries['fat_entry'].insert(0, '140')
-        # Orçamento permanece padrão
-        messagebox.showinfo('Exemplo Carregado', 'Exemplo carregado: 3100 kcal, 120g proteína, 140g gordura.')
+        for key, entry_name in [('calorias', 'cal_entry'), ('proteina', 'prot_entry'), ('gordura', 'fat_entry'), ('orcamento', 'budget_entry')]:
+            entry = self.entries[entry_name]
+            entry.delete(0, 'end')
+            entry.insert(0, DEFAULT_VALUES[key])
+        messagebox.showinfo(
+            'Exemplo Carregado',
+            f"Exemplo carregado: {DEFAULT_VALUES['calorias']} kcal, {DEFAULT_VALUES['proteina']}g proteína, {DEFAULT_VALUES['gordura']}g gordura, R$ {DEFAULT_VALUES['orcamento']}"
+        )
     
     def clear_fields(self):
         """Limpa todos os campos"""

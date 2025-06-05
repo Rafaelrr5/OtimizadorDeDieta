@@ -11,8 +11,8 @@ WINDOW_THEME = 'clam'
 DEFAULT_VALUES = {
     'calorias': "2000",
     'proteina': "50", 
-    'gordura': "65",
-    'orcamento': "50.00"
+    'gordura': "650",
+    'orcamento': "100.00"
 }
 
 # Configurações de limite de porções

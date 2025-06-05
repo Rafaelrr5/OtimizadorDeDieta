@@ -379,7 +379,50 @@ class DietApp:
     
     def open_food_selector(self):
         """Abre janela moderna para seleção de alimentos"""
-        messagebox.showinfo("Em Desenvolvimento", "Funcionalidade de seleção de alimentos será implementada em breve!")
+        # Criar janela de seleção de alimentos para exclusão
+        top = tk.Toplevel(self.root)
+        top.title("Selecionar Alimentos para Excluir")
+        top.geometry("400x500")
+        # Container de lista
+        frame = ttk.Frame(top, style='Modern.TFrame', padding=10)
+        frame.pack(fill='both', expand=True)
+        listbox = tk.Listbox(
+            frame,
+            selectmode='multiple',
+            bg=self.colors['bg_tertiary'],
+            fg=self.colors['text_primary'],
+            selectbackground=self.colors['accent'],
+            activestyle='none'
+        )
+        listbox.pack(side='left', fill='both', expand=True)
+        scrollbar = ttk.Scrollbar(frame, orient='vertical', command=listbox.yview)
+        scrollbar.pack(side='right', fill='y')
+        listbox.configure(yscrollcommand=scrollbar.set)
+        # Preencher lista com alimentos
+        for idx, food in enumerate(self.all_foods):
+            listbox.insert('end', food['nome'])
+            if food['nome'] in self.excluded_foods:
+                listbox.selection_set(idx)
+        # Função de confirmação
+        def confirm():
+            selected = [listbox.get(i) for i in listbox.curselection()]
+            self.excluded_foods = selected
+            # Atualizar display de exclusões
+            self.excluded_display.configure(state=tk.NORMAL)
+            self.excluded_display.delete('1.0', tk.END)
+            if selected:
+                self.excluded_display.insert('1.0', "\n".join(selected))
+            else:
+                self.excluded_display.insert('1.0', 'Nenhum alimento excluído')
+            self.excluded_display.configure(state=tk.DISABLED)
+            top.destroy()
+        # Botões de ação
+        btn_frame = ttk.Frame(top, style='Modern.TFrame', padding=10)
+        btn_frame.pack(fill='x')
+        confirm_btn = self.create_modern_button(btn_frame, 'Confirmar', confirm, self.colors['accent'])
+        confirm_btn.pack(side='left', expand=True, padx=5)
+        cancel_btn = self.create_modern_button(btn_frame, 'Cancelar', top.destroy, self.colors['error'])
+        cancel_btn.pack(side='right', expand=True, padx=5)
     
     def load_example(self):
         """Carrega valores de exemplo"""
@@ -482,10 +525,7 @@ class DietApp:
                     entry.focus()
                     return None
             
-            # Adicionar lista de alimentos excluídos e uso de limites
-            values.append(self.excluded_foods if self.excluded_foods else None)
-            values.append(self.use_portion_limits.get())
-            
+            # Retornar apenas valores numéricos para serem combinados com argumentos nomeados
             return tuple(values)
             
         except Exception as e:
@@ -518,7 +558,7 @@ class DietApp:
             self.root.update()
             
             # Executar otimização
-            resultado = optimize_diet(*inputs)
+            resultado = optimize_diet(*inputs, excluded_foods=self.excluded_foods, use_portion_limits=self.use_portion_limits.get())
             self.show_results(resultado)
             
         except Exception as e:

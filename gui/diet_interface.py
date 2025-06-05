@@ -215,8 +215,16 @@ class DietApp:
         # Frame para botões
         button_frame = ttk.Frame(parent, style='Modern.TFrame')
         button_frame.pack(fill='x', pady=(0,20))
-        button_frame.grid_columnconfigure((0,1,2), weight=1)
+        button_frame.grid_columnconfigure((0,1,2,3), weight=1)
         
+        # Botão para calcular parâmetros automaticamente
+        calc_button = self.create_modern_button(
+            button_frame,
+            "🔢 Calcular Valores",
+            self.calculate_parameters,
+            self.colors['accent']
+        )
+        calc_button.grid(row=0, column=0, padx=5, sticky="ew")
         # Botão principal de otimização
         optimize_button = self.create_modern_button(
             button_frame,
@@ -225,7 +233,7 @@ class DietApp:
             self.colors['success'],
             height=50
         )
-        optimize_button.grid(row=0, column=0, padx=5, sticky="ew")
+        optimize_button.grid(row=0, column=1, padx=5, sticky="ew")
         
         # Botão de exemplo
         example_button = self.create_modern_button(
@@ -234,7 +242,7 @@ class DietApp:
             self.load_example,
             self.colors['warning']
         )
-        example_button.grid(row=0, column=1, padx=5, sticky="ew")
+        example_button.grid(row=0, column=2, padx=5, sticky="ew")
         
         # Botão de limpar
         clear_button = self.create_modern_button(
@@ -243,7 +251,41 @@ class DietApp:
             self.clear_fields,
             self.colors['error']
         )
-        clear_button.grid(row=0, column=2, padx=5, sticky="ew")
+        clear_button.grid(row=0, column=3, padx=5, sticky="ew")
+    
+    def calculate_parameters(self):
+        """Calcula calorias, proteína e gordura automaticamente via Mifflin-St Jeor/TDEE"""
+        try:
+            weight = simpledialog.askfloat("Peso (kg)", "Informe seu peso (kg):", minvalue=0.1)
+            height = simpledialog.askfloat("Altura (cm)", "Informe sua altura (cm):", minvalue=0.1)
+            age = simpledialog.askinteger("Idade (anos)", "Informe sua idade (anos):", minvalue=1)
+            sex = simpledialog.askstring("Sexo", "Informe seu sexo (Masculino/Feminino):")
+            activity_levels = {'Sedentário':1.2,'Leve':1.375,'Moderado':1.55,'Ativo':1.725,'Muito Ativo':1.9}
+            activity = simpledialog.askstring("Nível de Atividade","Escolha seu nível: Sedentário, Leve, Moderado, Ativo ou Muito Ativo")
+            if None in (weight, height, age, sex, activity): return
+            sex = sex.capitalize()
+            if sex not in ('Masculino','Feminino'):
+                messagebox.showerror("Sexo Inválido","Sexo deve ser 'Masculino' ou 'Feminino'.")
+                return
+            key = activity.capitalize()
+            if key not in activity_levels:
+                messagebox.showerror("Atividade Inválida","Nível de atividade inválido.")
+                return
+            factor = activity_levels[key]
+            bmr = (10*weight + 6.25*height -5*age +5) if sex=='Masculino' else (10*weight + 6.25*height -5*age -161)
+            tdee = bmr*factor
+            calories = round(tdee)
+            protein = round(1.6*weight)
+            fat = round((0.25*calories)/9)
+            self.entries['cal_entry'].delete(0, tk.END)
+            self.entries['cal_entry'].insert(0,str(calories))
+            self.entries['prot_entry'].delete(0, tk.END)
+            self.entries['prot_entry'].insert(0,str(protein))
+            self.entries['fat_entry'].delete(0, tk.END)
+            self.entries['fat_entry'].insert(0,str(fat))
+            messagebox.showinfo("Valores Calculados",f"Calorias: {calories} kcal\nProteína: {protein} g\nGordura: {fat} g")
+        except Exception as e:
+            messagebox.showerror("Erro no Cálculo", f"Falha ao calcular parâmetros: {e}")
     
     def create_modern_button(self, parent, text, command, bg_color, height=40):
         """Cria um botão moderno personalizado"""
@@ -505,62 +547,7 @@ class DietApp:
     def run_optimization(self):
         """Executa a otimização e exibe os resultados"""
         try:
-            # Perguntar se o usuário quer calcular parâmetros de calorias, proteína e gordura
-            calc = messagebox.askyesno(
-                "Calcular Parâmetros",
-                "Você deseja calcular automaticamente calorias, proteína e gordura com base em seu peso, altura, idade e nível de atividade?\n\nClique em Sim para calcular, ou Não para inserir manualmente."
-            )
-            if calc:
-                # Solicitar dados do usuário
-                weight = simpledialog.askfloat("Peso", "Informe seu peso (kg):", minvalue=0.1)
-                height = simpledialog.askfloat("Altura", "Informe sua altura (cm):", minvalue=0.1)
-                age = simpledialog.askinteger("Idade", "Informe sua idade (anos):", minvalue=1)
-                sex = simpledialog.askstring("Sexo", "Informe seu sexo (Masculino/Feminino):")
-                # Mapear fatores de atividade
-                activity_levels = {
-                    'Sedentário': 1.2,
-                    'Leve': 1.375,
-                    'Moderado': 1.55,
-                    'Ativo': 1.725,
-                    'Muito Ativo': 1.9
-                }
-                activity = simpledialog.askstring(
-                    "Nível de Atividade",
-                    "Escolha nível de atividade: Sedentário, Leve, Moderado, Ativo, Muito Ativo"
-                )
-                # Validar entrada
-                if None in (weight, height, age, sex, activity):
-                    return
-                sex = sex.capitalize()
-                if sex not in ('Masculino', 'Feminino'):
-                    messagebox.showerror("Sexo Inválido", "Sexo deve ser 'Masculino' ou 'Feminino'.")
-                    return
-                activity_cap = activity.capitalize()
-                if activity_cap not in activity_levels:
-                    messagebox.showerror("Atividade Inválida", "Nível de atividade inválido.")
-                    return
-                # Cálculo de BMR e TDEE (Mifflin-St Jeor)
-                factor = activity_levels[activity_cap]
-                if sex == 'Masculino':
-                    bmr = 10 * weight + 6.25 * height - 5 * age + 5
-                else:
-                    bmr = 10 * weight + 6.25 * height - 5 * age - 161
-                tdee = bmr * factor
-                calories = round(tdee)
-                protein = round(1.6 * weight)
-                fat = round((0.25 * calories) / 9)
-                # Preencher campos
-                self.entries['cal_entry'].delete(0, tk.END)
-                self.entries['cal_entry'].insert(0, str(calories))
-                self.entries['prot_entry'].delete(0, tk.END)
-                self.entries['prot_entry'].insert(0, str(protein))
-                self.entries['fat_entry'].delete(0, tk.END)
-                self.entries['fat_entry'].insert(0, str(fat))
-                messagebox.showinfo(
-                    "Valores Calculados",
-                    f"Calorias: {calories} kcal\nProteína: {protein} g\nGordura: {fat} g"
-                )
-            # Depois de potencial cálculo, validar entradas
+            # Validar e obter entradas
             inputs = self.validate_inputs()
             if not inputs:
                 return

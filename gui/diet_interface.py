@@ -3,10 +3,11 @@ Interface gráfica moderna para o otimizador de dieta usando Tkinter nativo com 
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, simpledialog
 from optimization.diet_optimizer import optimize_diet
 from config.constants import *
 from data.food_database import get_food_data, get_food_categories
+from tkinter.ttk import Notebook
 
 class DietApp:
     """Classe principal da interface gráfica moderna"""
@@ -43,6 +44,7 @@ class DietApp:
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(0, weight=1)
         
+        # Criar widgets
         self.create_widgets()
     
     def setup_dark_theme(self):
@@ -91,64 +93,34 @@ class DietApp:
                        focuscolor='none')
     
     def create_widgets(self):
-        """Cria e posiciona os elementos da interface"""
-        # Frame principal com scroll
-        main_canvas = tk.Canvas(self.root, bg=self.colors['bg_primary'], highlightthickness=0)
-        main_canvas.grid(row=0, column=0, sticky="nsew")
-        
-        scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=main_canvas.yview)
-        scrollbar.grid(row=0, column=1, sticky="ns")
-        
-        main_canvas.configure(yscrollcommand=scrollbar.set)
-        
-        # Frame scrollável
-        self.main_frame = ttk.Frame(main_canvas, style='Modern.TFrame', padding=20)
-        canvas_frame = main_canvas.create_window((0, 0), window=self.main_frame, anchor="nw")
-        
-        # Configurar scroll
-        def configure_scroll(event):
-            main_canvas.configure(scrollregion=main_canvas.bbox("all"))
-            
-        def configure_canvas(event):
-            main_canvas.itemconfig(canvas_frame, width=event.width-20)
-            
-        self.main_frame.bind("<Configure>", configure_scroll)
-        main_canvas.bind("<Configure>", configure_canvas)
-        
-        # Bind scroll com mouse
-        def on_mousewheel(event):
-            main_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        # Ensure mouse wheel scrolls the page regardless of widget focus
-        self.root.bind_all("<MouseWheel>", on_mousewheel)
-        
-        # Configurar grid do frame principal
-        self.main_frame.grid_columnconfigure(0, weight=1)
-        
-        # Título principal
-        title_label = ttk.Label(
-            self.main_frame, 
-            text="🥗 Otimizador de Dieta com IA",
-            style='Title.TLabel'
-        )
-        title_label.grid(row=0, column=0, pady=(0, 30), sticky="ew")
-        
-        # Criar seções
-        self.create_input_section()
-        self.create_food_exclusion_section()
-        self.create_action_buttons()
-        self.create_results_section()
+        """Cria e posiciona os elementos da interface usando abas"""
+        self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_rowconfigure(0, weight=1)
+        # Criar Notebook
+        notebook = Notebook(self.root)
+        notebook.grid(row=0, column=0, sticky="nsew")
+        # Abas
+        params_tab = ttk.Frame(notebook, style='Modern.TFrame', padding=20)
+        exclusion_tab = ttk.Frame(notebook, style='Modern.TFrame', padding=20)
+        results_tab = ttk.Frame(notebook, style='Modern.TFrame', padding=20)
+        notebook.add(params_tab, text="📊 Parâmetros")
+        notebook.add(exclusion_tab, text="🚫 Exclusões")
+        notebook.add(results_tab, text="📋 Resultados")
+        # Título
+        title_label = ttk.Label(params_tab, text="🥗 Otimizador de Dieta com IA", style='Title.TLabel')
+        title_label.pack(pady=(0,20))
+        # Seções nas abas
+        self.create_input_section(params_tab)
+        self.create_action_buttons(params_tab)
+        self.create_food_exclusion_section(exclusion_tab)
+        self.create_results_section(results_tab)
     
-    def create_input_section(self):
+    def create_input_section(self, parent):
         """Cria a seção de entrada de parâmetros"""
         # Frame para parâmetros
-        params_frame = ttk.LabelFrame(
-            self.main_frame, 
-            text="📊 Parâmetros Nutricionais",
-            style='Card.TFrame',
-            padding=20
-        )
-        params_frame.grid(row=1, column=0, sticky="ew", pady=(0, 20))
-        params_frame.grid_columnconfigure((0, 1), weight=1)
+        params_frame = ttk.LabelFrame(parent, text="📊 Parâmetros Nutricionais", style='Card.TFrame', padding=20)
+        params_frame.pack(fill='x', pady=(0,20))
+        params_frame.grid_columnconfigure((0,1), weight=1)
         
         # Grid para organizar entradas
         entries_data = [
@@ -192,16 +164,15 @@ class DietApp:
         )
         self.portion_checkbox.pack()
     
-    def create_food_exclusion_section(self):
+    def create_food_exclusion_section(self, parent):
         """Cria a seção de exclusão de alimentos"""
         # Frame para exclusão
-        exclusion_frame = ttk.LabelFrame(
-            self.main_frame,
-            text="🚫 Exclusão de Alimentos",
-            style='Card.TFrame',
-            padding=20
-        )
-        exclusion_frame.grid(row=2, column=0, sticky="ew", pady=(0, 20))
+        exclusion_frame = ttk.LabelFrame(parent,
+             text="🚫 Exclusão de Alimentos",
+             style='Card.TFrame',
+             padding=20
+         )
+        exclusion_frame.pack(fill='x', pady=(0,20))
         exclusion_frame.grid_columnconfigure(0, weight=1)
         
         # Área de exibição
@@ -239,12 +210,12 @@ class DietApp:
         )
         select_button.grid(row=1, column=0, pady=(0, 10))
     
-    def create_action_buttons(self):
+    def create_action_buttons(self, parent):
         """Cria os botões de ação"""
         # Frame para botões
-        button_frame = ttk.Frame(self.main_frame, style='Modern.TFrame')
-        button_frame.grid(row=3, column=0, sticky="ew", pady=(0, 20))
-        button_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        button_frame = ttk.Frame(parent, style='Modern.TFrame')
+        button_frame.pack(fill='x', pady=(0,20))
+        button_frame.grid_columnconfigure((0,1,2), weight=1)
         
         # Botão principal de otimização
         optimize_button = self.create_modern_button(
@@ -312,22 +283,21 @@ class DietApp:
         }
         return color_map.get(color, color)
     
-    def create_results_section(self):
-        """Cria a seção de resultados"""
+    def create_results_section(self, parent):
+        """Cria a seção de resultados da otimização"""
         # Frame para resultados
-        results_frame = ttk.LabelFrame(
-            self.main_frame,
-            text="📋 Resultados da Otimização",
-            style='Card.TFrame',
-            padding=20
-        )
-        results_frame.grid(row=4, column=0, sticky="nsew", pady=(0, 20))
+        results_frame = ttk.LabelFrame(parent,
+             text="📋 Resultados da Otimização",
+             style='Card.TFrame',
+             padding=20
+         )
+        results_frame.pack(fill='both', expand=True, pady=(0,20))
         results_frame.grid_columnconfigure(0, weight=1)
         results_frame.grid_rowconfigure(0, weight=1)
         
         # Área de resultados com scroll
         text_frame = ttk.Frame(results_frame, style='Modern.TFrame')
-        text_frame.grid(row=0, column=0, sticky="nsew")
+        text_frame.pack(fill='both', expand=True)
         text_frame.grid_columnconfigure(0, weight=1)
         text_frame.grid_rowconfigure(0, weight=1)
         
@@ -535,6 +505,62 @@ class DietApp:
     def run_optimization(self):
         """Executa a otimização e exibe os resultados"""
         try:
+            # Perguntar se o usuário quer calcular parâmetros de calorias, proteína e gordura
+            calc = messagebox.askyesno(
+                "Calcular Parâmetros",
+                "Você deseja calcular automaticamente calorias, proteína e gordura com base em seu peso, altura, idade e nível de atividade?\n\nClique em Sim para calcular, ou Não para inserir manualmente."
+            )
+            if calc:
+                # Solicitar dados do usuário
+                weight = simpledialog.askfloat("Peso", "Informe seu peso (kg):", minvalue=0.1)
+                height = simpledialog.askfloat("Altura", "Informe sua altura (cm):", minvalue=0.1)
+                age = simpledialog.askinteger("Idade", "Informe sua idade (anos):", minvalue=1)
+                sex = simpledialog.askstring("Sexo", "Informe seu sexo (Masculino/Feminino):")
+                # Mapear fatores de atividade
+                activity_levels = {
+                    'Sedentário': 1.2,
+                    'Leve': 1.375,
+                    'Moderado': 1.55,
+                    'Ativo': 1.725,
+                    'Muito Ativo': 1.9
+                }
+                activity = simpledialog.askstring(
+                    "Nível de Atividade",
+                    "Escolha nível de atividade: Sedentário, Leve, Moderado, Ativo, Muito Ativo"
+                )
+                # Validar entrada
+                if None in (weight, height, age, sex, activity):
+                    return
+                sex = sex.capitalize()
+                if sex not in ('Masculino', 'Feminino'):
+                    messagebox.showerror("Sexo Inválido", "Sexo deve ser 'Masculino' ou 'Feminino'.")
+                    return
+                activity_cap = activity.capitalize()
+                if activity_cap not in activity_levels:
+                    messagebox.showerror("Atividade Inválida", "Nível de atividade inválido.")
+                    return
+                # Cálculo de BMR e TDEE (Mifflin-St Jeor)
+                factor = activity_levels[activity_cap]
+                if sex == 'Masculino':
+                    bmr = 10 * weight + 6.25 * height - 5 * age + 5
+                else:
+                    bmr = 10 * weight + 6.25 * height - 5 * age - 161
+                tdee = bmr * factor
+                calories = round(tdee)
+                protein = round(1.6 * weight)
+                fat = round((0.25 * calories) / 9)
+                # Preencher campos
+                self.entries['cal_entry'].delete(0, tk.END)
+                self.entries['cal_entry'].insert(0, str(calories))
+                self.entries['prot_entry'].delete(0, tk.END)
+                self.entries['prot_entry'].insert(0, str(protein))
+                self.entries['fat_entry'].delete(0, tk.END)
+                self.entries['fat_entry'].insert(0, str(fat))
+                messagebox.showinfo(
+                    "Valores Calculados",
+                    f"Calorias: {calories} kcal\nProteína: {protein} g\nGordura: {fat} g"
+                )
+            # Depois de potencial cálculo, validar entradas
             inputs = self.validate_inputs()
             if not inputs:
                 return

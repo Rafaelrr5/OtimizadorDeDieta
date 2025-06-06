@@ -10,7 +10,7 @@ class DietApp:
     
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("🥗 Otimizador de Dieta - Inteligência Artificial")
+        self.root.title("🥗 Otimizador de Dieta com Programação Linear")
         self.root.geometry("1200x800")
         self.root.minsize(900, 600)
         
@@ -108,7 +108,7 @@ class DietApp:
         # Construir seções em cada aba
         self.create_auto_calc_section(auto_tab)
         # Parâmetros
-        title_label = ttk.Label(params_tab, text="🥗 Otimizador de Dieta com IA", style='Title.TLabel')
+        title_label = ttk.Label(params_tab, text="🥗 Otimizador de Dieta com Programação Linear", style='Title.TLabel')
         title_label.pack(pady=(0,20))
         self.create_input_section(params_tab)
         self.create_action_buttons(params_tab)

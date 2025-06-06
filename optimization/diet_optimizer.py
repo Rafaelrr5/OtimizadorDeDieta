@@ -50,7 +50,7 @@ class DietOptimizer:
             self._add_portion_constraints()
         
         # Resolver o problema
-        self.problem.solve(pulp.PULP_CBC_CMD(msg=0))
+        self.problem.solve(pulp.GLPK_CMD(msg=0))
         
         # Retornar resultado
         return self._prepare_result()

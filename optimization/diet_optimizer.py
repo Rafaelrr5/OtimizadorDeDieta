@@ -1,7 +1,3 @@
-"""
-Módulo de otimização de dieta usando programação linear
-"""
-
 import pulp
 from data.food_database import get_food_data
 
@@ -49,8 +45,12 @@ class DietOptimizer:
         if use_portion_limits:
             self._add_portion_constraints()
         
-        # Resolver o problema
-        self.problem.solve(pulp.GLPK_CMD(msg=0))
+        # Resolver o problema com fallback: tentar GLPK e, em caso de falha, usar CBC
+        try:
+            self.problem.solve(pulp.GLPK_CMD(msg=0))
+        except (pulp.PulpSolverError, OSError):
+            # GLPK não disponível, usar solver interno CBC
+            self.problem.solve(pulp.PULP_CBC_CMD(msg=0))
         
         # Retornar resultado
         return self._prepare_result()

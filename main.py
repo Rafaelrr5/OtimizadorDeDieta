@@ -1,6 +1,5 @@
 """
 Otimizador de Dieta - Aplicação Principal
-Executa a interface gráfica do otimizador de dieta usando programação linear.
 
 Para executar: python main.py
 """

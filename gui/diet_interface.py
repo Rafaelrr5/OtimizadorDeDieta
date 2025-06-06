@@ -1,7 +1,3 @@
-"""
-Interface gráfica moderna para o otimizador de dieta usando Tkinter nativo com visual melhorado
-"""
-
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 from optimization.diet_optimizer import optimize_diet
@@ -39,6 +35,7 @@ class DietApp:
         self.all_foods = get_food_data()
         self.use_portion_limits = tk.BooleanVar(value=True)
         self.placeholder_status = {}  # Initialize placeholder tracking
+        self.auto_entries = {}  # Store widgets for automatic calculation inputs
         
         # Configurar grid principal
         self.root.grid_columnconfigure(0, weight=1)
@@ -100,19 +97,24 @@ class DietApp:
         notebook = Notebook(self.root)
         notebook.grid(row=0, column=0, sticky="nsew")
         # Abas
+        auto_tab = ttk.Frame(notebook, style='Modern.TFrame', padding=20)
         params_tab = ttk.Frame(notebook, style='Modern.TFrame', padding=20)
         exclusion_tab = ttk.Frame(notebook, style='Modern.TFrame', padding=20)
         results_tab = ttk.Frame(notebook, style='Modern.TFrame', padding=20)
+        notebook.add(auto_tab, text="🧮 Auto Cálculo")
         notebook.add(params_tab, text="📊 Parâmetros")
         notebook.add(exclusion_tab, text="🚫 Exclusões")
         notebook.add(results_tab, text="📋 Resultados")
-        # Título
+        # Construir seções em cada aba
+        self.create_auto_calc_section(auto_tab)
+        # Parâmetros
         title_label = ttk.Label(params_tab, text="🥗 Otimizador de Dieta com IA", style='Title.TLabel')
         title_label.pack(pady=(0,20))
-        # Seções nas abas
         self.create_input_section(params_tab)
         self.create_action_buttons(params_tab)
+        # Exclusões
         self.create_food_exclusion_section(exclusion_tab)
+        # Resultados
         self.create_results_section(results_tab)
     
     def create_input_section(self, parent):
@@ -215,16 +217,7 @@ class DietApp:
         # Frame para botões
         button_frame = ttk.Frame(parent, style='Modern.TFrame')
         button_frame.pack(fill='x', pady=(0,20))
-        button_frame.grid_columnconfigure((0,1,2,3), weight=1)
-        
-        # Botão para calcular parâmetros automaticamente
-        calc_button = self.create_modern_button(
-            button_frame,
-            "🔢 Calcular Valores",
-            self.calculate_parameters,
-            self.colors['accent']
-        )
-        calc_button.grid(row=0, column=0, padx=5, sticky="ew")
+        button_frame.grid_columnconfigure((0,1,2), weight=1)
         # Botão principal de otimização
         optimize_button = self.create_modern_button(
             button_frame,
@@ -233,7 +226,7 @@ class DietApp:
             self.colors['success'],
             height=50
         )
-        optimize_button.grid(row=0, column=1, padx=5, sticky="ew")
+        optimize_button.grid(row=0, column=0, padx=5, sticky="ew")
         
         # Botão de exemplo
         example_button = self.create_modern_button(
@@ -242,7 +235,7 @@ class DietApp:
             self.load_example,
             self.colors['warning']
         )
-        example_button.grid(row=0, column=2, padx=5, sticky="ew")
+        example_button.grid(row=0, column=1, padx=5, sticky="ew")
         
         # Botão de limpar
         clear_button = self.create_modern_button(
@@ -251,39 +244,67 @@ class DietApp:
             self.clear_fields,
             self.colors['error']
         )
-        clear_button.grid(row=0, column=3, padx=5, sticky="ew")
+        clear_button.grid(row=0, column=2, padx=5, sticky="ew")
+    
+    def create_auto_calc_section(self, parent):
+        """Cria a seção de cálculo automático de parâmetros baseados em dados pessoais"""
+        frame = ttk.LabelFrame(parent, text="🔢 Cálculo Automático", style='Card.TFrame', padding=20)
+        frame.pack(fill='x', pady=(0,20))
+        frame.grid_columnconfigure((0,1), weight=1)
+        fields = [("Peso (kg):","weight"),("Altura (cm):","height"),("Idade (anos):","age"),("Sexo (Masculino/Feminino):","gender"),("Nível de Atividade:","activity")]
+        activity_options = ['Sedentário','Leve','Moderado','Ativo','Muito Ativo']
+        for i,(label_text,key) in enumerate(fields):
+            label = ttk.Label(frame, text=label_text, style='Modern.TLabel')
+            label.grid(row=i, column=0, sticky='w', padx=(0,20), pady=10)
+            if key=='gender':
+                combo = ttk.Combobox(frame, values=['Masculino','Feminino'], state='readonly', style='Modern.TEntry')
+                combo.grid(row=i, column=1, sticky='ew', pady=10)
+                self.auto_entries[key] = combo
+            elif key=='activity':
+                combo = ttk.Combobox(frame, values=activity_options, state='readonly', style='Modern.TEntry')
+                combo.grid(row=i, column=1, sticky='ew', pady=10)
+                self.auto_entries[key] = combo
+            else:
+                entry = ttk.Entry(frame, style='Modern.TEntry', font=('Segoe UI',11))
+                entry.grid(row=i, column=1, sticky='ew', pady=10)
+                self.auto_entries[key] = entry
+        # Botão de cálculo
+        calc_btn = self.create_modern_button(frame, "🔢 Calcular", self.calculate_parameters, self.colors['accent'])
+        calc_btn.grid(row=len(fields), column=0, columnspan=2, pady=10, sticky='ew')
     
     def calculate_parameters(self):
-        """Calcula calorias, proteína e gordura automaticamente via Mifflin-St Jeor/TDEE"""
+        """Calcula calorias, proteína e gordura automaticamente via dados pessoais"""
         try:
-            weight = simpledialog.askfloat("Peso (kg)", "Informe seu peso (kg):", minvalue=0.1)
-            height = simpledialog.askfloat("Altura (cm)", "Informe sua altura (cm):", minvalue=0.1)
-            age = simpledialog.askinteger("Idade (anos)", "Informe sua idade (anos):", minvalue=1)
-            sex = simpledialog.askstring("Sexo", "Informe seu sexo (Masculino/Feminino):")
+            # Coletar valores do formulário automático
+            weight = float(self.auto_entries['weight'].get())
+            height = float(self.auto_entries['height'].get())
+            age = int(self.auto_entries['age'].get())
+            sex = self.auto_entries['gender'].get()
+            activity = self.auto_entries['activity'].get()
+            # Validar preenchimento
+            if not all([weight, height, age, sex, activity]):
+                messagebox.showerror("Campos Incompletos","Preencha todos os campos de cálculo automático.")
+                return
+            # Níveis de atividade
             activity_levels = {'Sedentário':1.2,'Leve':1.375,'Moderado':1.55,'Ativo':1.725,'Muito Ativo':1.9}
-            activity = simpledialog.askstring("Nível de Atividade","Escolha seu nível: Sedentário, Leve, Moderado, Ativo ou Muito Ativo")
-            if None in (weight, height, age, sex, activity): return
-            sex = sex.capitalize()
-            if sex not in ('Masculino','Feminino'):
-                messagebox.showerror("Sexo Inválido","Sexo deve ser 'Masculino' ou 'Feminino'.")
+            if sex not in ('Masculino','Feminino') or activity not in activity_levels:
+                messagebox.showerror("Erro de Validação","Sexo ou nível de atividade inválido.")
                 return
-            key = activity.capitalize()
-            if key not in activity_levels:
-                messagebox.showerror("Atividade Inválida","Nível de atividade inválido.")
-                return
-            factor = activity_levels[key]
+            factor = activity_levels[activity]
+            # Cálculo BMR e TDEE
             bmr = (10*weight + 6.25*height -5*age +5) if sex=='Masculino' else (10*weight + 6.25*height -5*age -161)
-            tdee = bmr*factor
+            tdee = bmr * factor
             calories = round(tdee)
-            protein = round(1.6*weight)
-            fat = round((0.25*calories)/9)
+            protein = round(1.6 * weight)
+            fat = round((0.25 * calories) / 9)
+            # Preencher campos de parâmetros
             self.entries['cal_entry'].delete(0, tk.END)
-            self.entries['cal_entry'].insert(0,str(calories))
+            self.entries['cal_entry'].insert(0, str(calories))
             self.entries['prot_entry'].delete(0, tk.END)
-            self.entries['prot_entry'].insert(0,str(protein))
+            self.entries['prot_entry'].insert(0, str(protein))
             self.entries['fat_entry'].delete(0, tk.END)
-            self.entries['fat_entry'].insert(0,str(fat))
-            messagebox.showinfo("Valores Calculados",f"Calorias: {calories} kcal\nProteína: {protein} g\nGordura: {fat} g")
+            self.entries['fat_entry'].insert(0, str(fat))
+            messagebox.showinfo("Valores Calculados", f"Calorias: {calories} kcal\nProteína: {protein} g\nGordura: {fat} g")
         except Exception as e:
             messagebox.showerror("Erro no Cálculo", f"Falha ao calcular parâmetros: {e}")
     

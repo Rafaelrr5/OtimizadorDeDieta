@@ -94,17 +94,19 @@ class DietApp:
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(0, weight=1)
         # Criar Notebook
-        notebook = Notebook(self.root)
-        notebook.grid(row=0, column=0, sticky="nsew")
+        self.notebook = Notebook(self.root)
+        self.notebook.grid(row=0, column=0, sticky="nsew")
         # Abas
-        auto_tab = ttk.Frame(notebook, style='Modern.TFrame', padding=20)
-        params_tab = ttk.Frame(notebook, style='Modern.TFrame', padding=20)
-        exclusion_tab = ttk.Frame(notebook, style='Modern.TFrame', padding=20)
-        results_tab = ttk.Frame(notebook, style='Modern.TFrame', padding=20)
-        notebook.add(auto_tab, text="🧮 Auto Cálculo")
-        notebook.add(params_tab, text="📊 Parâmetros")
-        notebook.add(exclusion_tab, text="🚫 Exclusões")
-        notebook.add(results_tab, text="📋 Resultados")
+        auto_tab = ttk.Frame(self.notebook, style='Modern.TFrame', padding=20)
+        params_tab = ttk.Frame(self.notebook, style='Modern.TFrame', padding=20)
+        exclusion_tab = ttk.Frame(self.notebook, style='Modern.TFrame', padding=20)
+        results_tab = ttk.Frame(self.notebook, style='Modern.TFrame', padding=20)
+        # Armazenar aba de resultados para seleção posterior
+        self.results_tab = results_tab
+        self.notebook.add(auto_tab, text="🧮 Auto Cálculo")
+        self.notebook.add(params_tab, text="📊 Parâmetros")
+        self.notebook.add(exclusion_tab, text="🚫 Exclusões")
+        self.notebook.add(self.results_tab, text="📋 Resultados")
         # Construir seções em cada aba
         self.create_auto_calc_section(auto_tab)
         # Parâmetros
@@ -594,6 +596,10 @@ class DietApp:
             # Executar otimização
             resultado = optimize_diet(*inputs, excluded_foods=self.excluded_foods, use_portion_limits=self.use_portion_limits.get())
             self.show_results(resultado)
+            # Exibir popup de conclusão e redirecionar para guia de resultados
+            messagebox.showinfo("Otimização Concluída", "A otimização foi concluída com sucesso! Você será redirecionado para a guia de resultados.")
+            # Selecionar a guia de resultados
+            self.notebook.select(self.results_tab)
             
         except Exception as e:
             messagebox.showerror("❌ Erro na Otimização", 

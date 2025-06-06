@@ -58,7 +58,39 @@ def get_food_data():
         {"nome": "Azeite", "calorias": 72, "proteina": 0.0, "gordura": 8.0, "carboidrato": 0.0, "preco": 1.00, "categoria": "Óleos e Gorduras", "porcao": "1 colher (10g)"},
         {"nome": "Manteiga", "calorias": 102, "proteina": 0.1, "gordura": 11.5, "carboidrato": 0.0, "preco": 0.42, "categoria": "Óleos e Gorduras", "porcao": "10g"},
     ]
-    
+    # Informações de preço de mercado conforme tabela anexa
+    market_info = {
+        "Banana nanica":    {"price": 3.00, "portion": "1 kg"},
+        "Ovo cozido":       {"price": 17.00, "portion": "20 ovos"},
+        "Leite integral":   {"price": 5.00, "portion": "1 L"},
+        "Farinha Láctea":   {"price": 25.00, "portion": "1 kg"},
+        "Aveia":            {"price": 1.50, "portion": "100 g"},
+        "Pasta de Amendoim":{"price": 30.00, "portion": "1 kg"},
+        "Pão francês":      {"price": 15.00, "portion": "1 kg"},
+        "Frango grelhado":  {"price": 15.00, "portion": "1 kg"},
+        "Carne moída magra":{"price": 15.00, "portion": "1 kg"},
+        "Atum em água":     {"price": 15.00, "portion": "1 lata (170 g)"},
+        "Batata inglesa":   {"price": 7.00, "portion": "1 kg"},
+        "Batata-doce":      {"price": 5.00, "portion": "1 kg"},
+        "Maçã":             {"price": 14.00, "portion": "1 kg"},
+        "Feijão cozido":    {"price": 8.00, "portion": "1 kg"},
+        "Arroz branco cozido":{"price": 7.00, "portion": "1 kg"},
+        "Macarrão cozido":  {"price": 4.00, "portion": "500 g"},
+        "Iogurte natural":  {"price": 12.79, "portion": "1 kg"},
+        "Azeite":           {"price": 50.00, "portion": "1 L"},
+        "Queijo mussarela": {"price": 30.00, "portion": "1 kg"},
+        # Manteiga sem dado de mercado específico, usa valor padrão
+    }
+    # Adicionar dados de mercado em cada alimento
+    for food in base_foods:
+        info = market_info.get(food['nome'])
+        if info:
+            food['market_price'] = info['price']
+            food['market_portion'] = info['portion']
+        else:
+            food['market_price'] = food['preco']
+            food['market_portion'] = food['porcao']
+
     # Adicionar limites de porção baseados na categoria
     for food in base_foods:
         categoria = food['categoria']

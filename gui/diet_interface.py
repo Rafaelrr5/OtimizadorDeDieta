@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 from optimization.diet_optimizer import optimize_diet
 from config.constants import *
-from data.food_database import get_food_data, get_food_categories
+from data.food_database import get_food_data, get_food_categories, get_food_by_name
 from tkinter.ttk import Notebook
 
 class DietApp:
@@ -626,15 +626,14 @@ class DietApp:
         text += f"│ 🧈 Gordura total:   {resultado['detalhes']['gordura_total']:>15.1f} g             │\n"
         text += f"│ 💰 Custo total:     R$ {resultado['custo_total']:>12.2f}                 │\n"
         text += "└─────────────────────────────────────────────────────────────────┘\n\n"
-          # Lista básica de alimentos
+          # Lista de alimentos com preço e porção
         text += "🥘 ALIMENTOS SELECIONADOS:\n\n"
         for alimento in resultado['alimentos']:
             emoji = self.get_food_emoji(alimento['nome'])
-            text += f"{emoji} {alimento['nome']}\n"
-            text += f"   📏 {alimento['quantidade']:.1f}g | "
-            text += f"🔥 {alimento['calorias']:.1f}kcal | "
-            text += f"💪 {alimento['proteina']:.1f}g | "
-            text += f"💰 R$ {alimento['custo']:.2f}\n\n"
+            # Exibir preço de mercado e porção de mercado, e informar porção nutricional
+            food_data = get_food_by_name(alimento['nome'])
+            text += f"{emoji} {alimento['nome']} | 💰 R$ {food_data['market_price']:.2f} por {food_data['market_portion']} | 🍽️ Porção nutr.: {food_data['porcao']}\n"
+            text += f"   🔢 Quantidade otim.: {alimento['quantidade']:.1f} porções | 🔥 {alimento['calorias']:.1f} kcal | 💪 {alimento['proteina']:.1f} g | 🧈 {alimento['gordura']:.1f} g | 🥖 {alimento.get('carboidrato', 0):.1f} g\n\n"
         
         self.result_display.insert("1.0", text)
     
